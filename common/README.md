@@ -1,0 +1,1 @@
+This directory is for code shared amongst the microservices
