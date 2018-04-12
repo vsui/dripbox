@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const Koa = require('koa');
 const MongoDB = require('mongodb');
 const winston = require('winston');
-
 const Router = require('koa-router');
 
 const app = new Koa();
@@ -75,6 +74,7 @@ router
   })
   .post('/verify', async (ctx) => {
     const { token } = ctx.request.body;
+    logger.info(`Verifying ${token}`);
     let verified = false;
     try {
       verified = await jwt.verify(token, process.env.JWT_SECRET);
@@ -86,9 +86,11 @@ router
     }
 
     if (verified) {
+      logger.info('Authorized token');
       ctx.body = {};
       ctx.status = 204;
     } else {
+      logger.info('Unauthorized token');
       ctx.body = {};
       ctx.status = 401;
     }
