@@ -92,7 +92,10 @@ const verify = async (ctx, next) => {
     ctx.status = 401;
     return;
   }
-  logger.info('Verified');
+
+  const { username } = jwt.decode(token);
+  logger.info(`Verified for ${username}`);
+  ctx.params.username = username;
 
   await next();
 };
