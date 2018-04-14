@@ -12,7 +12,7 @@ const remove = async (ctx) => {
   logger.info(`Deleting ${key} from S3 for ${username}`);
   await s3.deleteObject({
     Bucket: process.env.BUCKET_NAME,
-    Key: key,
+    Key: `${username}/${key}`,
   }).promise();
   ctx.status = 204;
 };
@@ -31,7 +31,7 @@ const upload = async (ctx) => {
   const response = await s3.putObject({
     Body: blob,
     Bucket: process.env.BUCKET_NAME,
-    Key: key,
+    Key: `${username}/${key}`,
   }).promise();
   logger.info(`Upload response status code: ${response}`);
 

@@ -10,7 +10,7 @@ const download = async (ctx) => {
   logger.info(`Retrieving ${key} for ${username}`);
   const response = await s3.getObject({
     Bucket: process.env.BUCKET_NAME,
-    Key: key,
+    Key: `${username}/${key}`,
   }).promise();
   // Response set to null if error occurs
   // NoSuchKey: The specified key does not exist.
