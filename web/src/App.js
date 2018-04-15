@@ -7,6 +7,7 @@ import {
 import jwt from 'jsonwebtoken';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import Header from './components/Header';
 import Landing from './routes/Landing';
 import Login from './routes/Login';
 
@@ -14,6 +15,7 @@ const App = () => (
   <Router>
     <div>
       <Link to="/home">Go home</Link>
+      <Header />
       <Route exact path="/" component={Landing} />
       <Route exact path="/login" component={Login} />
       <ProtectedRoute
