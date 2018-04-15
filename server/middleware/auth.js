@@ -49,7 +49,8 @@ const register = async (ctx, next) => {
   const token = jwt.sign({ username }, process.env.JWT_SECRET);
 
   const user = await credentialStore.findOne({ username });
-  if (user != null) {
+  if (user !== null) {
+    logger.info(`User ${username} already exists!`);
     ctx.status = 401;
     return;
   }
