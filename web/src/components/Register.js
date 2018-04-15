@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import { Input, Button } from '../styled';
+import { register } from '../utils/api';
 
 class Register extends Component {
+  static propTypes = {
+    history: PropTypes.shape({
+      push: PropTypes.func.isRequired,
+    }).isRequired,
+  }
+
   state = {
     username: '',
     usernameError: '',
@@ -24,16 +32,17 @@ class Register extends Component {
     this.setState({ confirmedPassword: e.target.value });
     this.validatePasswords(e.target.value, this.state.password);
   }
-
-  validateUsername = (username) => {
-    const regex = /^\w+$/;
-    if (!regex.test(username)) {
-      this.setState({ usernameError: 'Username should only contain letters, digits, and underscores!' });
-    } else {
-      this.setState({ usernameError: '' });
-    }
+  onClickRegister = () => {
+    const { username, password } = this.state;
+    register(username, password)
+      .then((token) => {
+        console.log(token);
+        localStorage.setItem('token', token);
+        console.log(this.props);
+        this.props.history.push('/home', null);
+      })
+      .catch(err => console.log(err));
   }
-
   validatePasswords = (confirmedPassword, password) => {
     if (password.length < 8) {
       this.setState({ passwordError: 'Password must be at least 8 characters!' });
@@ -45,6 +54,15 @@ class Register extends Component {
       this.setState({ passwordError: '' });
     }
   }
+  validateUsername = (username) => {
+    const regex = /^\w+$/;
+    if (!regex.test(username)) {
+      this.setState({ usernameError: 'Username should only contain letters, digits, and underscores!' });
+    } else {
+      this.setState({ usernameError: '' });
+    }
+  }
+
   render() {
     const {
       username,
@@ -78,7 +96,12 @@ class Register extends Component {
           minlength="8"
         />
         { passwordError }
-        <Button disabled={usernameError !== '' || passwordError !== ''}>Submit</Button>
+        <Button
+          disabled={usernameError !== '' || passwordError !== ''}
+          onClick={this.onClickRegister}
+        >
+          Sign up
+        </Button>
 
         <Link to="/login">Login</Link>
       </div>
@@ -86,4 +109,4 @@ class Register extends Component {
   }
 }
 
-export default Register;
+export default withRouter(Register);

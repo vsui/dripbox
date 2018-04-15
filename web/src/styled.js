@@ -26,6 +26,7 @@ const Input = styled.input`
     transition: border-color 1s;
     border-color: darkblue;
   }
+  transition: border-color 1s;
 `;
 
 const Button = styled.button`
@@ -38,7 +39,7 @@ const Button = styled.button`
   padding: 10px;
   border-radius: 8px;
   :hover {
-    top: -0.5px;
+    top: -1px;
     transition: top 0.25s;
   }
   border: 0px;
