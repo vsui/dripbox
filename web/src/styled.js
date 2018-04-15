@@ -20,14 +20,39 @@ const Input = styled.input`
   padding: 8px;
   transition: color 0.25s;
   border-radius: 5px;
+  border-color: lightgray;
   :focus {
     outline: none;
-    color: greenyellow;
-    ::-webkit-input-placeholder {
-      transition: color 0.25s;
-      color: pink;
-    }
+    transition: border-color 1s;
+    border-color: darkblue;
   }
 `;
 
-export { Subheading, Header, Input };
+const Button = styled.button`
+  display: block;
+  font-size: 1em;
+  color: white;
+  position: relative;
+  top: 0;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 8px;
+  :hover {
+    top: -0.5px;
+    transition: top 0.25s;
+  }
+  border: 0px;
+  background-color: lightgreen;
+  transition: background-color 0.5s;
+  :disabled {
+    background-color: red;
+    transition: background-color 0.5s;
+  }
+`;
+
+export {
+  Button,
+  Subheading,
+  Header,
+  Input,
+};
