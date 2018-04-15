@@ -8,7 +8,6 @@ const login = async (username, password) => {
     return Promise.reject(new Error('Could not login'));
   }
   const { token } = await res.json();
-  console.log('The token is... ' + token);
   return token;
 };
 
@@ -22,7 +21,6 @@ const register = async (username, password) => {
     return Promise.reject(new Error('Could not register'));
   }
   const { token } = await res.json();
-  console.log('The token is... ' + token);
   return token;
 };
 

@@ -4,6 +4,8 @@
     "rules": {
         "react/jsx-filename-extension": "ignore",
         "jsx-a11y/anchor-is-valid": "ignore"
+    },
+    "env": {
+        "browser": true
     }
-    
 }

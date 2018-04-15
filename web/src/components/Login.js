@@ -1,25 +1,31 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 import { Input, Button } from '../styled';
 import { login } from '../utils/api';
 
 class Login extends Component {
+  static propTypes = {
+    history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  }
+
   state = {
     username: '',
     password: '',
   }
 
   onUsernameChange = e => this.setState({ username: e.target.value })
+
   onPasswordChange = e => this.setState({ password: e.target.value })
+
   onLoginClick = () => {
     const { username, password } = this.state;
     login(username, password)
       .then((token) => {
         localStorage.setItem('token', token);
         this.props.history.push('/home', null);
-      })
-      .catch(err => console.log(err));
+      });
   }
 
   render() {

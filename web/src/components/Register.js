@@ -36,12 +36,9 @@ class Register extends Component {
     const { username, password } = this.state;
     register(username, password)
       .then((token) => {
-        console.log(token);
         localStorage.setItem('token', token);
-        console.log(this.props);
         this.props.history.push('/home', null);
-      })
-      .catch(err => console.log(err));
+      });
   }
   validatePasswords = (confirmedPassword, password) => {
     if (password.length < 8) {
