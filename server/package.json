@@ -10,6 +10,7 @@
   "author": "Victor <victorsui11@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "^2.2.1",
     "aws-sdk": "^2.224.1",
     "bcrypt": "^2.0.0",
     "dotenv": "^5.0.1",

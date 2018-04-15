@@ -1,4 +1,5 @@
 const bodyParser = require('koa-bodyparser');
+const cors = require('@koa/cors');
 const Koa = require('koa');
 const Router = require('koa-router');
 
@@ -9,6 +10,7 @@ const { remove, upload } = require('./middleware/upload');
 const logger = require('./util/logger');
 
 const app = new Koa();
+app.use(cors());
 app.use(bodyParser());
 
 const secured = new Router();
