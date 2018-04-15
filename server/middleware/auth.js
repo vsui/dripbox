@@ -48,6 +48,12 @@ const register = async (ctx, next) => {
 
   const token = jwt.sign({ username }, process.env.JWT_SECRET);
 
+  const user = await credentialStore.findOne({ username });
+  if (user != null) {
+    ctx.status = 401;
+    return;
+  }
+
   await credentialStore.insertOne({ username, hash });
   logger.info(`${username} - ${password} - ${hash}`);
   ctx.body = { token };
