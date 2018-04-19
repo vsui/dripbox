@@ -28,6 +28,9 @@ const list = async (ctx) => {
     Prefix: username,
   }).promise();
 
+  response.Contents = response.Contents.map(contents =>
+    ({ ...contents, Key: contents.Key.slice(username.length + 1) }));
+
   ctx.body = response.Contents;
   ctx.status = 200;
 };
