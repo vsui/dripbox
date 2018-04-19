@@ -19,4 +19,17 @@ const download = async (ctx) => {
   ctx.status = 200;
 };
 
-module.exports = { download };
+const list = async (ctx) => {
+  const { username } = ctx.params;
+  logger.info(`Retrieving all keys for ${username}`);
+  const response = await s3.listObjectsV2({
+    Bucket: process.env.BUCKET_NAME,
+    MaxKeys: 100,
+    Prefix: username,
+  }).promise();
+
+  ctx.body = response.Contents;
+  ctx.status = 200;
+};
+
+module.exports = { download, list };

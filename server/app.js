@@ -3,8 +3,9 @@ const cors = require('@koa/cors');
 const Koa = require('koa');
 const Router = require('koa-router');
 
-const { login, register, verify } = require('./middleware/auth');
-const { download } = require('./middleware/download');
+const credentialStore = require('./util/credentialStore');
+const { login, register, verify } = require('./middleware/auth')(credentialStore);
+const { download, list } = require('./middleware/download');
 const { remove, upload } = require('./middleware/upload');
 
 const logger = require('./util/logger');
@@ -22,6 +23,7 @@ unsecured
 
 secured
   .use(verify)
+  .get('/files', list)
   .get('/files/:key', download)
   .delete('/files/:key', remove)
   .post('/files/:key', upload);
