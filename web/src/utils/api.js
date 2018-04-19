@@ -72,7 +72,7 @@ const download = async (key) => {
   return res.blob();
 };
 
-const list = async (key) => {
+const list = async () => {
   const token = localStorage.getItem('token');
   if (token === null) {
     console.log('No token');
@@ -128,10 +128,14 @@ const upload = async (key, blob) => {
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
+  console.log(`Uploading ${blob} for ${key}`);
   const res = await fetch(`${API_URL}/files/${key}`, {
     method: 'POST',
-    body: blob,
-    headers: new Headers({ Authorization: `Bearer ${token}` }),
+    body: JSON.stringify({ blob }),
+    headers: new Headers({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }),
   });
   if (res.status === 401) {
     return Promise.reject(new Error('Not authorized'));
