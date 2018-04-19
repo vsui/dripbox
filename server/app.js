@@ -14,6 +14,12 @@ const app = new Koa();
 app.use(cors());
 app.use(bodyParser());
 
+app.use(async (ctx, next) => {
+  logger.info(`${ctx.request.method} ${ctx.url}`);
+  await next();
+  logger.info(`${ctx.request.method} ${ctx.url} - ${ctx.status}`);
+});
+
 const secured = new Router();
 const unsecured = new Router();
 
