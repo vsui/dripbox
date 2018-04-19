@@ -57,8 +57,8 @@ const download = async (key) => {
     console.log('No token');
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/${key}`, {
-    method: 'POST',
+  const res = await fetch(`${API_URL}/files/${key}`, {
+    method: 'GET',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
   });
   if (res.status === 401) {
@@ -72,6 +72,28 @@ const download = async (key) => {
   return res.blob();
 };
 
+const list = async (key) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    console.log('No token');
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const res = await fetch(`${API_URL}/files`, {
+    method: 'GET',
+    headers: new Headers({ Authorization: `Bearer ${token}` }),
+  });
+  if (res.status === 401) {
+    console.log('Not authorized');
+    return Promise.reject(new Error('Not authorized'));
+  }
+  if (res.status !== 200) {
+    console.log(`Unknown error ${res.status}`);
+    return Promise.reject(new Error('Unknown error'));
+  }
+  const files = await res.json();
+  return files;
+};
+
 /**
  * Remove `key` from the server
  * @param {string} key
@@ -82,8 +104,8 @@ const remove = async (key) => {
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/${key}`, {
-    method: 'POST',
+  const res = await fetch(`${API_URL}/files/${key}`, {
+    method: 'DELETE',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
   });
   if (res.status === 401) {
@@ -103,10 +125,10 @@ const remove = async (key) => {
  */
 const upload = async (key, blob) => {
   const token = localStorage.getItem('token');
-  if (token === null) { 
+  if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/${key}`, {
+  const res = await fetch(`${API_URL}/files/${key}`, {
     method: 'POST',
     body: blob,
     headers: new Headers({ Authorization: `Bearer ${token}` }),
@@ -123,6 +145,7 @@ const upload = async (key, blob) => {
 export {
   login,
   register,
+  list,
   download,
   remove,
   upload,

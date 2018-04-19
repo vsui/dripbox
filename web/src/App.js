@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import Home from './routes/Home';
 import Landing from './routes/Landing';
 import Login from './routes/Login';
 
@@ -21,12 +22,7 @@ const App = () => (
       <ProtectedRoute
         exact
         path="/home"
-        component={() => {
-          const { username } = jwt.decode(localStorage.getItem('token'));
-          return (
-            <div>Welcome { username }!</div>
-          );
-        }}
+        component={Home}
       />
     </div>
   </Router>
