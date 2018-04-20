@@ -18,6 +18,12 @@ const remove = async (ctx) => {
 };
 
 const upload = async (ctx) => {
+  if (ctx.request.body === null) {
+    logger.info(`Malformed body: ${JSON.stringify(ctx.request.body)}`);
+    ctx.status = 422;
+    ctx.body = 'Malformed body';
+    return;
+  }
   const { blob } = ctx.request.body;
   if (!blob) {
     logger.info(`Malformed body: ${JSON.stringify(ctx.request.body)}`);
