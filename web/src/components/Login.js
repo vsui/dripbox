@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import jwt from 'jsonwebtoken';
 
 import { Input, Button } from '../styled';
 import { login } from '../utils/api';
@@ -25,6 +27,10 @@ class Login extends Component {
       .then((token) => {
         localStorage.setItem('token', token);
         this.props.history.push('/home', null);
+        toast(`Welcome, ${jwt.decode(token).username}`);
+      })
+      .catch((err) => {
+        toast('Authentication failed');
       });
   }
 

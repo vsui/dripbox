@@ -4,7 +4,8 @@ import {
   Route,
   Link,
 } from 'react-router-dom';
-import jwt from 'jsonwebtoken';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
@@ -24,6 +25,7 @@ const App = () => (
         path="/home"
         component={Home}
       />
+      <ToastContainer />
     </div>
   </Router>
 );

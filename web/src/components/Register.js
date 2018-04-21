@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import jwt from 'jsonwebtoken';
 
 import { Input, Button } from '../styled';
 import { register } from '../utils/api';
@@ -38,6 +40,10 @@ class Register extends Component {
       .then((token) => {
         localStorage.setItem('token', token);
         this.props.history.push('/home', null);
+        toast(`Registration successful, welcome ${jwt.decode(token).username}!`);
+      })
+      .catch(() => {
+        toast('Registration failed');
       });
   }
   validatePasswords = (confirmedPassword, password) => {
