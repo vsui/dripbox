@@ -2,6 +2,8 @@
  * This module exposes a set of methods that interface with the server API
  */
 
+import FileSaver from 'file-saver';
+
 // TODO MOVE INTO .env
 // TODO CONSOLIDATE REJECTION FLOW INTO METHOD
 const API_URL = 'http://localhost:3001';
@@ -69,7 +71,9 @@ const download = async (key) => {
     console.log(`Unknown error ${res.status}`);
     return Promise.reject(new Error('Unknown error'));
   }
-  return res.blob();
+  const blob = await res.blob();
+  FileSaver.saveAs(blob, key);
+  return blob;
 };
 
 const list = async () => {
@@ -131,7 +135,7 @@ const upload = async (key, blob) => {
   console.log(`Uploading ${blob} for ${key}`);
   const res = await fetch(`${API_URL}/files/${key}`, {
     method: 'POST',
-    body: JSON.stringify({ blob }),
+    body: blob,
     headers: new Headers({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',

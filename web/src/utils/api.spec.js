@@ -1,3 +1,8 @@
+jest.mock('file-saver', () => ({
+  saveAs: jest.fn(),
+}));
+
+
 const api = require('./api');
 
 global.Headers = jest.fn();
