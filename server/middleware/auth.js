@@ -101,7 +101,7 @@ module.exports = credentialStore => ({
     logger.info(`Verified for ${username}`);
     ctx.params.username = username;
 
-    next();
+    await next();
   },
 });
 

@@ -22,17 +22,22 @@ const download = async (ctx) => {
 const list = async (ctx) => {
   const { username } = ctx.params;
   logger.info(`Retrieving all keys for ${username}`);
-  const response = await s3.listObjectsV2({
-    Bucket: process.env.BUCKET_NAME,
-    MaxKeys: 100,
-    Prefix: username,
-  }).promise();
-
-  response.Contents = response.Contents.map(contents =>
-    ({ ...contents, Key: contents.Key.slice(username.length + 1) }));
-
-  ctx.body = response.Contents;
+  try {
+    const response = await s3.listObjectsV2({
+      Bucket: process.env.BUCKET_NAME,
+      MaxKeys: 100,
+      Prefix: username,
+    }).promise();
+    response.Contents = response.Contents.map(contents =>
+      ({ ...contents, Key: contents.Key.slice(username.length + 1) }));
+    ctx.body = response.Contents;
+  } catch (err) {
+    logger.err(err);
+    ctx.body = [];
+  }
+  logger.info('Keys retrieved');
   ctx.status = 200;
+  logger.info('Done listing');
 };
 
 module.exports = { download, list };
