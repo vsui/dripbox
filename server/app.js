@@ -3,6 +3,7 @@ const cors = require('@koa/cors');
 const Koa = require('koa');
 const Router = require('koa-router');
 const auth = require('./middleware/auth');
+const formidable = require('koa2-formidable');
 
 const { download, list } = require('./middleware/download');
 const { remove, upload } = require('./middleware/upload');
@@ -14,7 +15,14 @@ credentialStore.then((store) => {
 
   const app = new Koa();
   app.use(cors());
-  app.use(bodyParser());
+  app.use(bodyParser({
+    enableTypes: ['json', 'form'],
+    textLimit: '5gb',
+    onerror: (err, ctx) => {
+      logger.err(err);
+      ctx.throw(err);
+    },
+  }));
 
   app.use(async (ctx, next) => {
     logger.info(`${ctx.request.method} ${ctx.url}`);
@@ -35,10 +43,10 @@ credentialStore.then((store) => {
     .get('/files', list)
     .get('/files/:key', download)
     .delete('/files/:key', remove)
-    .post('/files/:key', upload);
+    .post('/files/:key', formidable(), upload);
 
   app
-    .use(unsecured.routes()) // Register unsecured routes before the router
+    .use(unsecured.routes())
     .use(unsecured.allowedMethods())
     .use(secured.routes())
     .use(secured.allowedMethods());

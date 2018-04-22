@@ -1,5 +1,6 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
+const fs = require('fs');
 
 const remove = async (ctx) => {
   const { key, username } = ctx.params;
@@ -18,28 +19,21 @@ const remove = async (ctx) => {
 };
 
 const upload = async (ctx) => {
-  if (ctx.request.body === null) {
-    logger.info(`Malformed body: ${JSON.stringify(ctx.request.body)}`);
+  const file = ctx.request.files.upload;
+  if (!file) {
     ctx.status = 422;
-    ctx.body = 'Malformed body';
     return;
   }
-  const { blob } = ctx.request.body;
-  if (!blob) {
-    logger.info(`Malformed body: ${JSON.stringify(ctx.request.body)}`);
-    ctx.status = 422;
-    ctx.body = 'Malformed body';
-    return;
-  }
+  const stream = fs.createReadStream(file.path);
   const { key, username } = ctx.params;
 
-  logger.info(`Uploading ${key} (${blob.length}) to S3 for ${username}`);
+  logger.info(`Uploading ${key} (${file.size}) to S3 for ${username}`);
   const response = await s3.putObject({
-    Body: blob,
+    Body: stream,
     Bucket: process.env.BUCKET_NAME,
     Key: `${username}/${key}`,
   }).promise();
-  logger.info(`Upload response status code: ${response}`);
+  logger.info(`Upload response: ${response}`);
 
   ctx.status = 204;
 };

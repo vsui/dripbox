@@ -5,6 +5,10 @@ jest.mock('../../util/s3', () => ({
     .mockReturnValue({ promise: jest.fn() }),
 }));
 
+jest.mock('fs', () => ({
+  createReadStream: jest.fn().mockReturnValue('stream'),
+}));
+
 process.env.BUCKET_NAME = 'testBucket';
 
 const s3 = require('../../util/s3');
@@ -32,21 +36,23 @@ describe('remove middleware', () => {
 describe('upload middleware', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('should call deleteObject', async () => {
+  it('should call putObject', async () => {
     const ctx = {
       params: {
         key: 'a.txt',
         username: 'me',
       },
       request: {
-        body: { blob: 'BIG GIANT ANTS' },
+        files: {
+          upload: { path: '/fakepath' },
+        },
       },
     };
     await upload(ctx, null);
     expect(s3.putObject).toHaveBeenCalledWith({
       Bucket: 'testBucket',
       Key: 'me/a.txt',
-      Body: 'BIG GIANT ANTS',
+      Body: 'stream',
     });
   });
 
@@ -57,38 +63,26 @@ describe('upload middleware', () => {
         username: 'me',
       },
       request: {
-        body: { blob: 'BIG GIANT ANTS' },
+        files: {
+          upload: { path: '/fakepath' },
+        },
       },
     };
     await upload(ctx, null);
     expect(ctx.status).toBe(204);
   });
 
-  it('should not call deleteObject if there is no blob', async () => {
+  it('should not call putObject if there is no blob', async () => {
     const ctx = {
       params: {
         key: 'a.txt',
         username: 'me',
       },
       request: {
-        body: null,
+        files: {},
       },
     };
     await upload(ctx, null);
     expect(s3.putObject).not.toHaveBeenCalled();
-  });
-
-  it('should set status to 422 if there is no blob', async () => {
-    const ctx = {
-      params: {
-        key: 'a.txt',
-        username: 'me',
-      },
-      request: {
-        body: null,
-      },
-    };
-    await upload(ctx, null);
-    expect(ctx.status).toBe(422);
   });
 });
