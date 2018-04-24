@@ -25,7 +25,7 @@ FileListing.propTypes = {
 
 const mapStateToProps = state => state;
 const mapDispatchToProps = dispatch => ({
-  refresh: dispatch({ type: LIST_FILES_REQUESTED }),
+  refresh: () => dispatch({ type: LIST_FILES_REQUESTED }),
 });
 
 export default connect(
