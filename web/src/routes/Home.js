@@ -2,29 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
-import { list, upload } from '../utils/api';
+import { upload } from '../utils/api';
 import FileListing from '../components/FileListing';
 
 export default class Home extends Component {
   static propTypes = {
     username: PropTypes.string.isRequired,
-  }
-
-  state = {
-    files: [],
-    selected: null,
-  }
-
-  componentDidMount() {
-    list()
-      .then((items) => {
-        this.setState({
-          files: items,
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   }
 
   onSubmit = () => {

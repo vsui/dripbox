@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { toast } from 'react-toastify';
 
-import { LIST_FILES_SUCCEEDED, REMOVE_FILE_SUCCEEDED, UPLOAD_FILE_SUCCEEDED, LIST_FILES_FAILED, REMOVE_FILE_FAILED, UPLOAD_FILE_FAILED } from './actions';
+import { LIST_FILES_SUCCEEDED, REMOVE_FILE_SUCCEEDED, UPLOAD_FILE_SUCCEEDED, LIST_FILES_FAILED, REMOVE_FILE_FAILED, UPLOAD_FILE_FAILED, ADD_FOLDER_SUCCEEDED } from './actions';
 
 const files = (state = [], action) => {
   switch (action.type) {
@@ -14,6 +14,10 @@ const files = (state = [], action) => {
         fileName: action.name,
         lastModified: String(action.file.lastModified),
         fileSize: action.file.size,
+      }];
+    case ADD_FOLDER_SUCCEEDED:
+      return [...state, {
+        fileName: `${action.folderName}/`,
       }];
     default:
       return state;

@@ -128,6 +128,7 @@ const remove = async (key) => {
  * @returns {Promise} - Resolves if upload is successful, rejects otherwise
  */
 const upload = async (key, blob) => {
+  console.log(`uploading ${key} ${blob}`);
   const token = localStorage.getItem('token');
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
@@ -137,6 +138,29 @@ const upload = async (key, blob) => {
   const res = await fetch(`${API_URL}/files/${key}`, {
     method: 'POST',
     body: formData,
+    headers: new Headers({
+      Authorization: `Bearer ${token}`,
+    }),
+  });
+  if (res.status === 401) {
+    return Promise.reject(new Error('Not authorized'));
+  }
+  if (res.status === 422) {
+    return Promise.reject(new Error('Malformed body'));
+  }
+  if (res.status === 204) {
+    return Promise.resolve();
+  }
+  return Promise.reject();
+};
+
+const putFolder = async (folderName) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const res = await fetch(`${API_URL}/folders/${folderName}`, {
+    method: 'PUT',
     headers: new Headers({
       Authorization: `Bearer ${token}`,
     }),
@@ -157,4 +181,5 @@ export {
   download,
   remove,
   upload,
+  putFolder,
 };

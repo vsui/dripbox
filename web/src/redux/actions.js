@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { list, remove, upload } from '../utils/api';
+import { list, remove, upload, putFolder } from '../utils/api';
 
 const LIST_FILES_REQUESTED = ('List files requested');
 const LIST_FILES_SUCCEEDED = ('List files succeeded');
@@ -12,6 +12,10 @@ const REMOVE_FILE_FAILED = ('Delete file failed');
 const UPLOAD_FILE_REQUESTED = ('Upload file requested');
 const UPLOAD_FILE_SUCCEEDED = ('Upload file succeeded');
 const UPLOAD_FILE_FAILED = ('Upload file failed');
+
+const ADD_FOLDER_REQUESTED = 'Add folder requested';
+const ADD_FOLDER_SUCCEEDED = 'Add folder succeeded';
+const ADD_FOLDER_FAILED = 'Add folder failed';
 
 function* listFiles() {
   try {
@@ -54,6 +58,19 @@ function* uploadFileSaga() {
   yield takeLatest(UPLOAD_FILE_REQUESTED, uploadFile);
 }
 
+function* addFolder({ folderName }) {
+  try {
+    yield call(putFolder, folderName);
+    yield put({ type: ADD_FOLDER_SUCCEEDED, folderName });
+  } catch (err) {
+    yield put({ type: ADD_FOLDER_FAILED, message: err.message });
+  }
+}
+
+function* addFolderSaga() {
+  yield takeLatest(ADD_FOLDER_REQUESTED, addFolder);
+}
+
 export {
   LIST_FILES_SUCCEEDED,
   LIST_FILES_REQUESTED,
@@ -67,7 +84,12 @@ export {
   UPLOAD_FILE_REQUESTED,
   UPLOAD_FILE_SUCCEEDED,
 
+  ADD_FOLDER_REQUESTED,
+  ADD_FOLDER_SUCCEEDED,
+  ADD_FOLDER_FAILED,
+
   listFilesSaga,
   removeFileSaga,
   uploadFileSaga,
+  addFolderSaga,
 };

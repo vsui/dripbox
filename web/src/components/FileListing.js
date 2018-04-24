@@ -5,18 +5,26 @@ import Dropzone from 'react-dropzone';
 
 import { LIST_FILES_REQUESTED, UPLOAD_FILE_REQUESTED } from '../redux/actions';
 import File from './File';
+import Folder from './Folder';
+import FolderAdder from './FolderAdder';
 
 const FileListing = props => (
   <div>
+    <FolderAdder />
     <button onClick={props.refresh}>Refresh</button>
     <Dropzone
       disableClick
       onDrop={files =>
-        files.map(file => 
+        files.map(file =>
           props.upload(file.name, file))}
     >
       {
-        props.files.map(file => <File key={file.fileName} {...file} />)
+        props.files.map((file) => {
+          if (file.fileName.endsWith('/')) {
+            return <Folder key={file.fileName} {...file} folderName={file.fileName.slice(0, -1)} />;
+          }
+          return <File key={file.fileName} {...file} />;
+        })
       }
     </Dropzone>
   </div>
