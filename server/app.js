@@ -26,7 +26,6 @@ credentialStore.then((store) => {
 
   app.use(async (ctx, next) => {
     logger.info(`${ctx.request.method} ${ctx.url}`);
-    logger.info(`Body: ${ctx.body}`);
     await next();
     logger.info(`${ctx.request.method} ${ctx.url} - ${ctx.status}`);
   });
