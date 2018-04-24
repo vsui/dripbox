@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
-import { list, upload, download } from '../utils/api';
-import File from '../components/File';
+import { list, upload } from '../utils/api';
+import FileListing from '../components/FileListing';
 
 export default class Home extends Component {
   static propTypes = {
@@ -46,11 +46,9 @@ export default class Home extends Component {
     return (
       <div>
         <h1>{this.props.username}</h1>
-        {
-          this.state.files.map(file => <File {...file} />)
-        }
         <input type="file" onChange={e => this.setState({ selected: e.target.files[0] })} />
         <button onClick={this.onSubmit}>Submit</button>
+        <FileListing />
       </div>
     );
   }

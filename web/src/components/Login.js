@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 
 import { Input, Button } from '../styled';
 import { login } from '../utils/api';
+import store from '../store/store';
+import { LIST_FILES_REQUESTED } from '../store/actions';
 
 class Login extends Component {
   static propTypes = {
@@ -25,11 +27,13 @@ class Login extends Component {
     const { username, password } = this.state;
     login(username, password)
       .then((token) => {
+        // Probably best to put this all in api?
         localStorage.setItem('token', token);
         this.props.history.push('/home', null);
         toast(`Welcome, ${jwt.decode(token).username}`);
+        store.dispatch({ type: LIST_FILES_REQUESTED });
       })
-      .catch((err) => {
+      .catch(() => {
         toast('Authentication failed');
       });
   }

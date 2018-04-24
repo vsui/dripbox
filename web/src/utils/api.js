@@ -134,8 +134,6 @@ const upload = async (key, blob) => {
   }
   const formData = new FormData();
   formData.append('upload', blob);
-
-  console.log(`Uploading ${blob} for ${key}`);
   const res = await fetch(`${API_URL}/files/${key}`, {
     method: 'POST',
     body: formData,
