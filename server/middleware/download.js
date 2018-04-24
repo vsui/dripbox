@@ -28,9 +28,12 @@ const list = async (ctx) => {
       MaxKeys: 100,
       Prefix: username,
     }).promise();
-    response.Contents = response.Contents.map(contents =>
-      ({ ...contents, Key: contents.Key.slice(username.length + 1) }));
-    ctx.body = response.Contents;
+    ctx.body = response.Contents.map(contents =>
+      ({
+        fileName: contents.Key.slice(username.length + 1),
+        fileSize: contents.Size,
+        lastModified: contents.LastModified,
+      }));
   } catch (err) {
     logger.err(err);
     ctx.body = [];
