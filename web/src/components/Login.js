@@ -6,8 +6,8 @@ import jwt from 'jsonwebtoken';
 
 import { Input, Button } from '../styled';
 import { login } from '../utils/api';
-import store from '../store/store';
-import { LIST_FILES_REQUESTED } from '../store/actions';
+import store from '../redux/store';
+import { LIST_FILES_REQUESTED } from '../redux/actions';
 
 class Login extends Component {
   static propTypes = {

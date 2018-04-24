@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { LIST_FILES_REQUESTED } from '../store/actions';
+import { LIST_FILES_REQUESTED } from '../redux/actions';
 
 import File from './File';
 
