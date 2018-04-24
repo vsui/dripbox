@@ -28,14 +28,25 @@ const upload = async (ctx) => {
   const { key, username } = ctx.params;
 
   logger.info(`Uploading ${key} (${file.size}) to S3 for ${username}`);
-  const response = await s3.putObject({
+  await s3.putObject({
     Body: stream,
     Bucket: process.env.BUCKET_NAME,
     Key: `${username}/${key}`,
   }).promise();
-  logger.info(`Upload response: ${response}`);
 
   ctx.status = 204;
 };
 
-module.exports = { remove, upload };
+const addFolder = async (ctx) => {
+  const { key, username } = ctx.params; // TODO Verify folderName is ok
+  logger.info(`Adding folder at ${key} for ${username}`);
+  await s3.putObject({
+    Body: '',
+    Bucket: process.env.BUCKET_NAME,
+    Key: `${username}/${key}/`,
+  }).promise();
+
+  ctx.status = 204;
+};
+
+module.exports = { remove, upload, addFolder };
