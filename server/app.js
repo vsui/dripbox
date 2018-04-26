@@ -51,6 +51,8 @@ credentialStore.then((store) => {
     .use(secured.allowedMethods())
     .use(verify)
     .use(download)
+    .use(formidable())
+    .use(upload)
     .use(listFolder);
 
   app.listen(process.env.PORT, () => logger.info(`Listening on ${process.env.PORT}`));

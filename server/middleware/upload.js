@@ -18,23 +18,28 @@ const remove = async (ctx) => {
   ctx.status = 204;
 };
 
-const upload = async (ctx) => {
-  const file = ctx.request.files.upload;
-  if (!file) {
-    ctx.status = 422;
-    return;
+const upload = async (ctx, next) => {
+  if (ctx.url.startsWith('/files') && ctx.request.method === 'PUT') {
+    const path = ctx.url.substring('/files'.length);
+    const file = ctx.request.files.upload;
+    if (!file) {
+      ctx.status = 422;
+      return;
+    }
+    const stream = fs.createReadStream(file.path);
+    const { username } = ctx.params;
+
+    logger.info(`Uploading ${path} (${file.size}) to S3 for ${username}`);
+    await s3.putObject({
+      Body: stream,
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${username}${path}`,
+    }).promise();
+
+    ctx.status = 204;
+  } else {
+    await next();
   }
-  const stream = fs.createReadStream(file.path);
-  const { key, username } = ctx.params;
-
-  logger.info(`Uploading ${key} (${file.size}) to S3 for ${username}`);
-  await s3.putObject({
-    Body: stream,
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${username}/${key}`,
-  }).promise();
-
-  ctx.status = 204;
 };
 
 const addFolder = async (ctx) => {
