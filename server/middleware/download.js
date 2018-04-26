@@ -1,6 +1,8 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
 
+const { isInPath, getRelativeUrl } = require('../util/helpers');
+
 const download = async (ctx) => {
   const { key, username } = ctx.params;
   if (!key) {
@@ -16,6 +18,40 @@ const download = async (ctx) => {
   // NoSuchKey: The specified key does not exist.
   // logger.info(`Retrieved ${key}`);
   ctx.body = response.Body;
+  ctx.status = 200;
+};
+
+/**
+ * Sets the `ctx.body` to a list of the contents folder of the url parameter `key`
+ * @param {koa.Context} ctx
+ */
+const listFolder = async (ctx) => {
+  const { key, username } = ctx.params;
+  const path = key === '' ? '/' : `/${key}/`;
+  logger.info(`Retrieving contents of ${key} for ${username}`);
+  const response = await s3.listObjectsV2({
+    Bucket: process.env.BUCKET_NAME,
+    Prefix: `${username}${path}`,
+  }).promise();
+  if (response.status !== 200) {
+    logger.info(`S3 Error in listFolder ${key} for ${username}`);
+    ctx.status = 500;
+    return;
+  }
+  if (response.Contents.length === 0) {
+    logger.info(`Could not find folder ${key} for ${username} (${username}${path})`);
+    ctx.status = 404;
+    return;
+  }
+  const files = response.Contents.map(contents => ({
+    fileName: contents.Key.slice(username.length),
+    fileSize: contents.Size,
+    lastModified: contents.LastModified,
+  }));
+  const filesInFolder = files.filter(file => isInPath(path, file.fileName));
+  const relativePaths = filesInFolder.map(file =>
+    ({ ...file, fileName: getRelativeUrl(path, file.fileName).substring(1) }));
+  ctx.body = relativePaths;
   ctx.status = 200;
 };
 
@@ -43,4 +79,4 @@ const list = async (ctx) => {
   logger.info('Done listing');
 };
 
-module.exports = { download, list };
+module.exports = { download, list, listFolder };

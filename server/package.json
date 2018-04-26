@@ -7,6 +7,9 @@
     "start": "node -r dotenv/config app",
     "test": "jest"
   },
+  "jest": {
+    "setupFiles": ["<rootDir>/jest-set-up/index.js"]
+  },
   "author": "Victor <victorsui11@gmail.com>",
   "license": "ISC",
   "dependencies": {
