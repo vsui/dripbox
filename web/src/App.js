@@ -21,7 +21,6 @@ const App = () => (
       <Route exact path="/" component={Landing} />
       <Route exact path="/login" component={Login} />
       <ProtectedRoute
-        exact
         path="/home"
         component={Home}
       />

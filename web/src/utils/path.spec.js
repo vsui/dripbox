@@ -1,4 +1,4 @@
-import { pathToList } from './path';
+import { pathToList, pathJoin } from './path';
 
 describe('pathToList', () => {
   it('should work for root', () => {
@@ -61,5 +61,27 @@ describe('pathToList', () => {
       { absolute: '/folders/fruits', relative: 'fruits' },
       { absolute: '/folders/fruits/apples', relative: 'apples' },
     ]);
+  });
+});
+
+describe('pathJoin', () => {
+  it('should remove duplicate /\'s (root)', () => {
+    expect(pathJoin('/', '/folder')).toBe('/folder');
+  });
+
+  it('should remove duplicate /\'s', () => {
+    expect(pathJoin('/home/', '/folder')).toBe('/home/folder');
+  });
+
+  it('should add slash when necessary', () => {
+    expect(pathJoin('folder', 'child')).toBe('folder/child');
+  });
+
+  it('should just concatenate when the slashes are ok (1)', () => {
+    expect(pathJoin('folder/', 'child')).toBe('folder/child');
+  });
+
+  it('should just concatenate when the slashes are ok (2)', () => {
+    expect(pathJoin('folder', '/child')).toBe('folder/child');
   });
 });

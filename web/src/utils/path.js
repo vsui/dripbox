@@ -34,6 +34,16 @@ const pathToList = (path) => {
   return soFar;
 };
 
+const pathJoin = (prefix, suffix) => {
+  if (prefix.endsWith('/') && suffix.startsWith('/')) {
+    return `${prefix}${suffix.substring(1)}`;
+  }
+  if (!prefix.endsWith('/') && !suffix.startsWith('/')) {
+    return `${prefix}/${suffix}`;
+  }
+  return `${prefix}${suffix}`;
+};
+
 export default isInPath;
-export { pathToList };
+export { pathToList, pathJoin };
 
