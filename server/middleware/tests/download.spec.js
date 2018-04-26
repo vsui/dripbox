@@ -1,9 +1,16 @@
 jest.mock('../../util/s3', () => ({
   getObject: jest
     .fn()
-    .mockReturnValue({
-      promise: jest.fn().mockResolvedValue({ Body: '1234' }),
-    }),
+    .mockImplementation(({ Key }) => ({
+      promise: jest.fn().mockImplementation(() => {
+        if (Key === 'me/nonexistent-file.txt') {
+          const error = new Error('The specified key does not exist.');
+          error.code = 'NoSuchKey';
+          throw error;
+        }
+        return Promise.resolve({ Body: `Contents of ${Key}` });
+      }),
+    })),
   listObjectsV2: jest
     .fn()
     .mockImplementation(({ Prefix }) => ({
@@ -34,15 +41,83 @@ const { download, list, listFolder } = require('../download');
 describe('download middleware', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('should return the downloaded file on success', async () => {
+  it('should return the downloaded file in root on success', async () => {
     const ctx = {
       params: {
-        key: 'file.txt',
         username: 'me',
+      },
+      url: '/files/file.txt',
+      request: {
+        method: 'GET',
       },
     };
     await download(ctx, null);
-    expect(ctx.body).toBe('1234');
+    expect(ctx.body).toBe('Contents of me/file.txt');
+  });
+  it('should set status to 200 on success', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/files/file.txt',
+      request: {
+        method: 'GET',
+      },
+    };
+    await download(ctx, null);
+    expect(ctx.status).toBe(200);
+  });
+  it('should set status to 404 on NoSuchKey error', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/files/nonexistent-file.txt',
+      request: {
+        method: 'GET',
+      },
+    };
+    await download(ctx, null);
+    expect(ctx.status).toBe(404);
+  });
+  it('should return the downloaded file on success', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/files/foods/recipes/watermelon.hs',
+      request: {
+        method: 'GET',
+      },
+    };
+    await download(ctx, null);
+    expect(ctx.body).toBe('Contents of me/foods/recipes/watermelon.hs');
+  });
+  it('should set status to 200 on success (not root)', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/files/foods/recipes/watermelon.hs',
+      request: {
+        method: 'GET',
+      },
+    };
+    await download(ctx, null);
+    expect(ctx.status).toBe(200);
+  });
+  it('should not do anything if the url does not start with /files', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/folders/foods/recipes/watermelon.hs',
+      request: {
+        method: 'GET',
+      },
+    };
+    await download(ctx, null);
+    expect(s3.getObject).not.toHaveBeenCalled();
   });
 });
 

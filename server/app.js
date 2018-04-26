@@ -40,7 +40,6 @@ credentialStore.then((store) => {
   secured
     .use(verify)
     .get('/files', list)
-    .get('/files/:key', download)
     .delete('/files/:key', remove)
     .post('/files/:key', formidable(), upload)
     .put('/folders/:key', addFolder);
@@ -51,6 +50,7 @@ credentialStore.then((store) => {
     .use(secured.routes())
     .use(secured.allowedMethods())
     .use(verify)
+    .use(download)
     .use(listFolder);
 
   app.listen(process.env.PORT, () => logger.info(`Listening on ${process.env.PORT}`));

@@ -4,21 +4,26 @@ const s3 = require('../util/s3');
 const { isInPath, getRelativeUrl } = require('../util/helpers');
 
 const download = async (ctx) => {
-  const { key, username } = ctx.params;
-  if (!key) {
-    ctx.status = 204;
+  if (!ctx.url.startsWith('/files') || ctx.request.method !== 'GET') {
     return;
   }
-  logger.info(`Retrieving ${key} for ${username}`);
-  const response = await s3.getObject({
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${username}/${key}`,
-  }).promise();
-  // Response set to null if error occurs
-  // NoSuchKey: The specified key does not exist.
-  // logger.info(`Retrieved ${key}`);
-  ctx.body = response.Body;
-  ctx.status = 200;
+  const path = ctx.url.substring('/files'.length);
+  const { username } = ctx.params;
+  logger.info(`Retrieving ${path} for ${username}`);
+  try {
+    const response = await s3.getObject({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${username}${path}`,
+    }).promise();
+    ctx.body = response.Body;
+    ctx.status = 200;
+  } catch (err) {
+    if (err.code === 'NoSuchKey') {
+      ctx.status = 404;
+      return;
+    }
+    throw err;
+  }
 };
 
 /**
@@ -26,7 +31,6 @@ const download = async (ctx) => {
  * @param {koa.Context} ctx
  */
 const listFolder = async (ctx) => {
-  logger.debug('ru=an this');
   if (!ctx.url.startsWith('/folders') || ctx.request.method !== 'GET') {
     return;
   }
