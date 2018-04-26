@@ -10,10 +10,11 @@ const File = ({
   fileSize,
   lastModified,
   remove,
+  fullPath,
 }) => (
   <div>
     { fileName } { fileSize } {lastModified }
-    <button onClick={() => download(fileName)}>Download</button>
+    <button onClick={() => download(fullPath)}>Download</button>
     <button onClick={() => remove(fileName)}>Remove</button>
   </div>
 );
@@ -23,6 +24,7 @@ File.propTypes = {
   fileSize: PropTypes.number.isRequired,
   lastModified: PropTypes.string.isRequired,
   remove: PropTypes.func.isRequired,
+  fullPath: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch, props) => ({

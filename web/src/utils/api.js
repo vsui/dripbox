@@ -61,7 +61,9 @@ const download = async (key) => {
     console.log('No token');
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/files/${key}`, {
+  const path = pathJoin(`${API_URL}/files`, key);
+  toast(`Downloading ${path}`);
+  const res = await fetch(path, {
     method: 'GET',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
   });

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Dropzone from 'react-dropzone';
 import { withRouter } from 'react-router';
-import isInPath from '../utils/path';
+import isInPath, { pathJoin } from '../utils/path';
 
 import { LIST_FILES_REQUESTED, UPLOAD_FILE_REQUESTED } from '../redux/actions';
 import { listFolder } from '../utils/api';
@@ -90,7 +90,13 @@ class FileListing extends Component {
                   />
                 );
               }
-              return <File key={file.fileName} {...file} />;
+              return (
+                <File
+                  key={file.fileName}
+                  {...file}
+                  fullPath={pathJoin(props.path, file.fileName)}
+                />
+              );
             })
           }
         </Dropzone>
