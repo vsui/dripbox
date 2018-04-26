@@ -55,7 +55,7 @@ const register = async (username, password) => {
  * @param {string} key - The key to query for
  * @returns {Promise} - Resolves to the downloaded blob
  */
-const download = async (key) => {
+const download = async (key, fileName) => {
   const token = localStorage.getItem('token');
   if (token === null) {
     console.log('No token');
@@ -76,7 +76,7 @@ const download = async (key) => {
     return Promise.reject(new Error('Unknown error'));
   }
   const blob = await res.blob();
-  FileSaver.saveAs(blob, key);
+  FileSaver.saveAs(blob, fileName);
   return blob;
 };
 

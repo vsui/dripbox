@@ -14,7 +14,7 @@ const File = ({
 }) => (
   <div>
     { fileName } { fileSize } {lastModified }
-    <button onClick={() => download(fullPath)}>Download</button>
+    <button onClick={() => download(fullPath, fileName)}>Download</button>
     <button onClick={() => remove(fileName)}>Remove</button>
   </div>
 );
