@@ -5,7 +5,7 @@ const Router = require('koa-router');
 const auth = require('./middleware/auth');
 const formidable = require('koa2-formidable');
 
-const { download, list } = require('./middleware/download');
+const { download, list, listFolder } = require('./middleware/download');
 const { remove, upload, addFolder } = require('./middleware/upload');
 const logger = require('./util/logger');
 const credentialStore = require('./util/credentialStore');
@@ -43,7 +43,9 @@ credentialStore.then((store) => {
     .get('/files/:key', download)
     .delete('/files/:key', remove)
     .post('/files/:key', formidable(), upload)
-    .put('/folders/:key', addFolder);
+    .put('/folders/:key', addFolder)
+    .get('/folders/:key', listFolder)
+    .get('/folders', async (ctx, next) => { ctx.params.key = ''; await next(); }, listFolder);
 
   app
     .use(unsecured.routes())

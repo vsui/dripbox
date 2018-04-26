@@ -33,11 +33,6 @@ const listFolder = async (ctx) => {
     Bucket: process.env.BUCKET_NAME,
     Prefix: `${username}${path}`,
   }).promise();
-  if (response.status !== 200) {
-    logger.info(`S3 Error in listFolder ${key} for ${username}`);
-    ctx.status = 500;
-    return;
-  }
   if (response.Contents.length === 0) {
     logger.info(`Could not find folder ${key} for ${username} (${username}${path})`);
     ctx.status = 404;
