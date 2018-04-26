@@ -2,20 +2,19 @@ const logger = require('../util/logger');
 const s3 = require('../util/s3');
 const fs = require('fs');
 
-const remove = async (ctx) => {
-  const { key, username } = ctx.params;
-  if (!key) {
-    logger.info(`Malformed body: ${JSON.stringify(ctx.request.body)}`);
-    ctx.status = 422;
-    ctx.body = 'Malformed body';
-    return;
+const remove = async (ctx, next) => {
+  if (ctx.url.startsWith('/files') && ctx.request.method === 'DELETE') {
+    const path = ctx.url.substring('/files'.length);
+    const { username } = ctx.params;
+    logger.info(`Deleting ${path} from S3 for ${username}`);
+    await s3.deleteObject({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${username}${path}`,
+    }).promise();
+    ctx.status = 204;
+  } else {
+    await next();
   }
-  logger.info(`Deleting ${key} from S3 for ${username}`);
-  await s3.deleteObject({
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${username}/${key}`,
-  }).promise();
-  ctx.status = 204;
 };
 
 const upload = async (ctx, next) => {

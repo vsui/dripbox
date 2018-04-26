@@ -18,18 +18,122 @@ describe('remove middleware', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('should call deleteObject', async () => {
-    const ctx = { params: { key: 'a.txt', username: 'me' } };
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'DELETE',
+      },
+      url: '/files/somefile.txt',
+    };
     await remove(ctx, null);
     expect(s3.deleteObject).toHaveBeenCalledWith({
       Bucket: 'testBucket',
-      Key: 'me/a.txt',
+      Key: 'me/somefile.txt',
     });
   });
 
   it('should set status to 204 on success', async () => {
-    const ctx = { params: { key: 'a.txt', username: 'me' } };
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'DELETE',
+      },
+      url: '/files/somefile.txt',
+    };
     await remove(ctx, null);
     expect(ctx.status).toBe(204);
+  });
+
+  it('should call deleteObject (not root)', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'DELETE',
+      },
+      url: '/files/folder/child/somefile.txt',
+    };
+    await remove(ctx, null);
+    expect(s3.deleteObject).toHaveBeenCalledWith({
+      Bucket: 'testBucket',
+      Key: 'me/folder/child/somefile.txt',
+    });
+  });
+
+  it('should set status to 204 on success (not root)', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'DELETE',
+      },
+      url: '/files/folder/child/somefile.txt',
+    };
+    await remove(ctx, null);
+    expect(ctx.status).toBe(204);
+  });
+
+  it('should not call deleteObject if method is not DELETE', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'PUT',
+      },
+      url: '/files/folder/child/somefile.txt',
+    };
+    await remove(ctx, jest.fn());
+    expect(s3.deleteObject).not.toHaveBeenCalled();
+  });
+
+  it('should not call deleteObject if url does not start with /files', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'PUT',
+      },
+      url: '/folders/folder/child/somefile.txt',
+    };
+    await remove(ctx, jest.fn());
+    expect(s3.deleteObject).not.toHaveBeenCalled();
+  });
+  it('should call next if method is not DELETE', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'PUT',
+      },
+      url: '/files/folder/child/somefile.txt',
+    };
+    const next = jest.fn();
+    await remove(ctx, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should call next if url does not start with /files', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      request: {
+        method: 'PUT',
+      },
+      url: '/folders/folder/child/somefile.txt',
+    };
+    const next = jest.fn();
+    await remove(ctx, next);
+    expect(next).toHaveBeenCalled();
   });
 });
 

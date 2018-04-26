@@ -40,8 +40,6 @@ credentialStore.then((store) => {
   secured
     .use(verify)
     .get('/files', list)
-    .delete('/files/:key', remove)
-    .post('/files/:key', formidable(), upload)
     .put('/folders/:key', addFolder);
 
   app
@@ -50,6 +48,7 @@ credentialStore.then((store) => {
     .use(secured.routes())
     .use(secured.allowedMethods())
     .use(verify)
+    .use(remove)
     .use(download)
     .use(formidable())
     .use(upload)
