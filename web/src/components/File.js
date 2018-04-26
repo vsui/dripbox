@@ -9,13 +9,13 @@ const File = ({
   fileName,
   fileSize,
   lastModified,
-  remove,
   fullPath,
+  deleteFile,
 }) => (
   <div>
     { fileName } { fileSize } {lastModified }
     <button onClick={() => download(fullPath, fileName)}>Download</button>
-    <button onClick={() => remove(fileName)}>Remove</button>
+    <button onClick={deleteFile}>Remove</button>
   </div>
 );
 
@@ -23,7 +23,7 @@ File.propTypes = {
   fileName: PropTypes.string.isRequired,
   fileSize: PropTypes.number.isRequired,
   lastModified: PropTypes.string.isRequired,
-  remove: PropTypes.func.isRequired,
+  deleteFile: PropTypes.func.isRequired,
   fullPath: PropTypes.func.isRequired,
 };
 

@@ -132,7 +132,9 @@ const remove = async (key) => {
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/files/${key}`, {
+  const fetchPath = pathJoin(`${API_URL}/files`, key);
+  toast(`Deleting ${fetchPath}`);
+  const res = await fetch(fetchPath, {
     method: 'DELETE',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
   });

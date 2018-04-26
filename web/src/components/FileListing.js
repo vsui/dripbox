@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import isInPath, { pathJoin } from '../utils/path';
 
 import { LIST_FILES_REQUESTED, UPLOAD_FILE_REQUESTED } from '../redux/actions';
-import { listFolder, upload } from '../utils/api';
+import { listFolder, upload, remove } from '../utils/api';
 import File from './File';
 import Folder from './Folder';
 import FolderAdder from './FolderAdder';
@@ -62,7 +62,18 @@ class FileListing extends Component {
         });
       })
       .catch(() => {
-        toast('upload failed');
+        toast('Upload failed');
+      });
+  }
+
+  deleteFile(file) {
+    remove(pathJoin(this.props.path, file.fileName))
+      .then(() => {
+        this.setState({
+          files: this.state.files.filter(({ fileName }) => fileName !== file.fileName),
+        });
+      }).catch(() => {
+        toast('Delete failed');
       });
   }
 
@@ -110,6 +121,7 @@ class FileListing extends Component {
               return (
                 <File
                   key={file.fileName}
+                  deleteFile={() => this.deleteFile(file)}
                   {...file}
                   fullPath={pathJoin(props.path, file.fileName)}
                 />
