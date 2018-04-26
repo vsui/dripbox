@@ -3,10 +3,11 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Dropzone from 'react-dropzone';
 import { withRouter } from 'react-router';
+import { toast } from 'react-toastify';
 import isInPath, { pathJoin } from '../utils/path';
 
 import { LIST_FILES_REQUESTED, UPLOAD_FILE_REQUESTED } from '../redux/actions';
-import { listFolder } from '../utils/api';
+import { listFolder, upload } from '../utils/api';
 import File from './File';
 import Folder from './Folder';
 import FolderAdder from './FolderAdder';
@@ -49,6 +50,22 @@ class FileListing extends Component {
     }
   }
 
+  uploadFile(file) {
+    upload(pathJoin(this.props.path, file.name), file)
+      .then(() => {
+        this.setState({
+          files: [...this.state.files, {
+            fileName: file.name,
+            lastModified: String(file.lastModified),
+            fileSize: file.size,
+          }],
+        });
+      })
+      .catch(() => {
+        toast('upload failed');
+      });
+  }
+
   _loadFiles(path) {
     this._asyncRequest = listFolder(path)
       .then((files) => {
@@ -77,7 +94,7 @@ class FileListing extends Component {
           disableClick
           onDrop={files =>
             files.map(file =>
-              props.upload(file.name, file))}
+              this.uploadFile(file))}
         >
           {
             this.state.files.map((file) => {

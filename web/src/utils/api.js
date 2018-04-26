@@ -156,10 +156,12 @@ const upload = async (key, blob) => {
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
+  const fetchPath = pathJoin(`${API_URL}/files`, key);
   const formData = new FormData();
   formData.append('upload', blob);
-  const res = await fetch(`${API_URL}/files/${key}`, {
-    method: 'POST',
+  toast(`Uploading ${fetchPath}`);
+  const res = await fetch(fetchPath, {
+    method: 'PUT',
     body: formData,
     headers: new Headers({
       Authorization: `Bearer ${token}`,
