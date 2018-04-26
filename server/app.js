@@ -43,15 +43,15 @@ credentialStore.then((store) => {
     .get('/files/:key', download)
     .delete('/files/:key', remove)
     .post('/files/:key', formidable(), upload)
-    .put('/folders/:key', addFolder)
-    .get('/folders/:key', listFolder)
-    .get('/folders', async (ctx, next) => { ctx.params.key = ''; await next(); }, listFolder);
+    .put('/folders/:key', addFolder);
 
   app
     .use(unsecured.routes())
     .use(unsecured.allowedMethods())
     .use(secured.routes())
-    .use(secured.allowedMethods());
+    .use(secured.allowedMethods())
+    .use(verify)
+    .use(listFolder);
 
   app.listen(process.env.PORT, () => logger.info(`Listening on ${process.env.PORT}`));
 });

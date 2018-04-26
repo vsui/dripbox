@@ -27,6 +27,8 @@ jest.mock('../../util/s3', () => ({
     })),
 }));
 
+const s3 = require('../../util/s3');
+
 const { download, list, listFolder } = require('../download');
 
 describe('download middleware', () => {
@@ -77,8 +79,11 @@ describe('listFolder middleware', () => {
     const ctx = {
       params: {
         username: 'me',
-        key: 'chairs',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders/chairs',
     };
     await listFolder(ctx);
     expect(ctx.status).toBe(404);
@@ -88,8 +93,11 @@ describe('listFolder middleware', () => {
     const ctx = {
       params: {
         username: 'me',
-        key: 'foods/ap',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders/foods/ap',
     };
     await listFolder(ctx);
     expect(ctx.status).toBe(404);
@@ -99,8 +107,11 @@ describe('listFolder middleware', () => {
     const ctx = {
       params: {
         username: 'me',
-        key: 'foods',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders/foods',
     };
     await listFolder(ctx);
     expect(ctx.body).toEqual([
@@ -114,19 +125,25 @@ describe('listFolder middleware', () => {
     const ctx = {
       params: {
         username: 'me',
-        key: 'foods',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders/foods',
     };
     await listFolder(ctx);
     expect(ctx.status).toEqual(200);
   });
 
-  it('returns a lisst of relative url given the root folder', async () => {
+  it('returns a list of relative url given the root folder', async () => {
     const ctx = {
       params: {
         username: 'me',
-        key: '',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders',
     };
     await listFolder(ctx);
     expect(ctx.body).toEqual([
@@ -142,10 +159,23 @@ describe('listFolder middleware', () => {
     const ctx = {
       params: {
         username: 'me',
-        key: '',
       },
+      request: {
+        method: 'GET',
+      },
+      url: '/folders',
     };
     await listFolder(ctx);
     expect(ctx.status).toEqual(200);
+  });
+
+  it('does nothing if the url does not begin with \'folders\'', async () => {
+    await listFolder({ url: 'sadfasd' });
+    expect(s3.listObjectsV2).not.toHaveBeenCalled();
+  });
+
+  it('does nothing if the method is not GET', async () => {
+    await listFolder({ url: '/folders', request: { method: 'PUT' } });
+    expect(s3.listObjectsV2).not.toHaveBeenCalled();
   });
 });

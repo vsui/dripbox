@@ -6,7 +6,7 @@ const logger = require('../util/logger');
 const SALT_ROUNDS = 10;
 
 module.exports = credentialStore => ({
-  async login(ctx, next) {
+  async login(ctx) {
     const { username, password } = ctx.request.body;
 
     const user = await credentialStore.findOne({ username });
@@ -26,13 +26,10 @@ module.exports = credentialStore => ({
     } else {
       ctx.status = 401; // Not authorized
       ctx.body = {};
-      return;
     }
-
-    await next();
   },
 
-  async register(ctx, next) {
+  async register(ctx) {
     const { username, password } = ctx.request.body;
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hash = await bcrypt.hash(password, salt);
@@ -50,8 +47,6 @@ module.exports = credentialStore => ({
     logger.info(`${username} - ${password} - ${hash}`);
     ctx.body = { token };
     ctx.status = 200;
-
-    await next();
   },
 
   async verify(ctx, next) {
@@ -99,7 +94,11 @@ module.exports = credentialStore => ({
 
     const { username } = jwt.decode(token);
     logger.info(`Verified for ${username}`);
-    ctx.params.username = username;
+    if (ctx.params) {
+      ctx.params.username = username;
+    } else {
+      ctx.params = { username };
+    }
 
     await next();
   },

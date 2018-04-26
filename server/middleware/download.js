@@ -26,15 +26,19 @@ const download = async (ctx) => {
  * @param {koa.Context} ctx
  */
 const listFolder = async (ctx) => {
-  const { key, username } = ctx.params;
-  const path = key === '' ? '/' : `/${key}/`;
-  logger.info(`Retrieving contents of ${key} for ${username}`);
+  logger.debug('ru=an this');
+  if (!ctx.url.startsWith('/folders') || ctx.request.method !== 'GET') {
+    return;
+  }
+  const path = `${ctx.url.substring('/folders'.length)}${ctx.url.endsWith('/') ? '' : '/'}`;
+  const { username } = ctx.params;
+  logger.info(`Retrieving contents of ${path} for ${username}`);
   const response = await s3.listObjectsV2({
     Bucket: process.env.BUCKET_NAME,
     Prefix: `${username}${path}`,
   }).promise();
   if (response.Contents.length === 0) {
-    logger.info(`Could not find folder ${key} for ${username} (${username}${path})`);
+    logger.info(`Could not find folder ${path} for ${username} (${username}${path})`);
     ctx.status = 404;
     return;
   }

@@ -45,16 +45,6 @@ describe('login middleware', () => {
     expect(ctx.status).toBe(401);
   });
 
-  it('should call next if jwt is properly authenticated', async () => {
-    const mockStore = { findOne: jest.fn().mockResolvedValue({}) };
-    const { login } = auth(mockStore);
-    jwt.sign = jest.fn();
-    bcrypt.compare = jest.fn().mockResolvedValue(true);
-    const mockNext = jest.fn();
-    const ctx = ctxWithCredentials();
-    await login(ctx, mockNext);
-    expect(mockNext).toHaveBeenCalledTimes(1);
-  });
   it('should set status to 200 if jwt is properly authenticated', async () => {
     const mockStore = { findOne: jest.fn().mockResolvedValue({}) };
     const { login } = auth(mockStore);
