@@ -116,8 +116,23 @@ describe('download middleware', () => {
         method: 'GET',
       },
     };
-    await download(ctx, null);
+    await download(ctx, jest.fn());
     expect(s3.getObject).not.toHaveBeenCalled();
+  });
+
+  it('should call next if the url does not start with /files', async () => {
+    const ctx = {
+      params: {
+        username: 'me',
+      },
+      url: '/folders/foods/recipes/watermelon.hs',
+      request: {
+        method: 'GET',
+      },
+    };
+    const mockNext = jest.fn();
+    await download(ctx, mockNext);
+    expect(mockNext).toHaveBeenCalled();
   });
 });
 

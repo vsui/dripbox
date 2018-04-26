@@ -3,26 +3,27 @@ const s3 = require('../util/s3');
 
 const { isInPath, getRelativeUrl } = require('../util/helpers');
 
-const download = async (ctx) => {
-  if (!ctx.url.startsWith('/files') || ctx.request.method !== 'GET') {
-    return;
-  }
-  const path = ctx.url.substring('/files'.length);
-  const { username } = ctx.params;
-  logger.info(`Retrieving ${path} for ${username}`);
-  try {
-    const response = await s3.getObject({
-      Bucket: process.env.BUCKET_NAME,
-      Key: `${username}${path}`,
-    }).promise();
-    ctx.body = response.Body;
-    ctx.status = 200;
-  } catch (err) {
-    if (err.code === 'NoSuchKey') {
-      ctx.status = 404;
-      return;
+const download = async (ctx, next) => {
+  if (ctx.url.startsWith('/files') && ctx.request.method === 'GET') {
+    const path = ctx.url.substring('/files'.length);
+    const { username } = ctx.params;
+    logger.info(`Retrieving ${path} for ${username}`);
+    try {
+      const response = await s3.getObject({
+        Bucket: process.env.BUCKET_NAME,
+        Key: `${username}${path}`,
+      }).promise();
+      ctx.body = response.Body;
+      ctx.status = 200;
+    } catch (err) {
+      if (err.code === 'NoSuchKey') {
+        ctx.status = 404;
+        return;
+      }
+      throw err;
     }
-    throw err;
+  } else {
+    await next();
   }
 };
 
