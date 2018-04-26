@@ -6,7 +6,8 @@
     ],
     "rules": {
         "react/jsx-filename-extension": "ignore",
-        "jsx-a11y/anchor-is-valid": "ignore"
+        "jsx-a11y/anchor-is-valid": "ignore",
+        "no-underscore-dangle": 0
     },
     "env": {
         "browser": true

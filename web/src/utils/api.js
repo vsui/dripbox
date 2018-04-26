@@ -3,6 +3,8 @@
  */
 
 import FileSaver from 'file-saver';
+import { toast } from 'react-toastify';
+import { pathJoin } from '../utils/path';
 
 // TODO MOVE INTO .env
 // TODO CONSOLIDATE REJECTION FLOW INTO METHOD
@@ -98,6 +100,26 @@ const list = async () => {
   return files;
 };
 
+const listFolder = async (path) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    console.log('No token');
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const fetchPath = pathJoin(`${API_URL}/folders`, path);
+  toast(`Listing ${fetchPath}`);
+  const res = await fetch(fetchPath, {
+    method: 'GET',
+    headers: new Headers({ Authorization: `Bearer ${token}` }),
+  });
+  if (res.status !== 200) {
+    console.log(`Unknown error ${res.status}`);
+    return Promise.reject(new Error('Unknown error'));
+  }
+  const files = await res.json();
+  return files;
+};
+
 /**
  * Remove `key` from the server
  * @param {string} key
@@ -128,7 +150,6 @@ const remove = async (key) => {
  * @returns {Promise} - Resolves if upload is successful, rejects otherwise
  */
 const upload = async (key, blob) => {
-  console.log(`uploading ${key} ${blob}`);
   const token = localStorage.getItem('token');
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
@@ -155,6 +176,9 @@ const upload = async (key, blob) => {
 };
 
 const putFolder = async (folderName) => {
+  if (folderName === '') {
+    throw new Error('Folder must have a name');
+  }
   const token = localStorage.getItem('token');
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
@@ -178,6 +202,7 @@ export {
   login,
   register,
   list,
+  listFolder,
   download,
   remove,
   upload,
