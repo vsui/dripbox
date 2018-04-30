@@ -105,29 +105,31 @@ class FileListing extends Component {
           files.map(file =>
             this.uploadFile(file))}
       >
-        <PathNavigator prefix="/home" path={props.location.pathname.substring(5)} />
-        <FolderAdder />
-        {
-          this.state.files.map((file) => {
-            if (file.fileName.endsWith('/')) {
+        <div>
+          <PathNavigator prefix="/home" path={props.location.pathname.substring(5)} />
+          <FolderAdder />
+          {
+            this.state.files.map((file) => {
+              if (file.fileName.endsWith('/')) {
+                return (
+                  <Folder
+                    key={file.fileName}
+                    {...file}
+                    folderName={file.fileName.slice(0, -1)}
+                  />
+                );
+              }
               return (
-                <Folder
+                <File
                   key={file.fileName}
+                  deleteFile={() => this.deleteFile(file)}
                   {...file}
-                  folderName={file.fileName.slice(0, -1)}
+                  fullPath={pathJoin(props.path, file.fileName)}
                 />
               );
-            }
-            return (
-              <File
-                key={file.fileName}
-                deleteFile={() => this.deleteFile(file)}
-                {...file}
-                fullPath={pathJoin(props.path, file.fileName)}
-              />
-            );
-          })
-        }
+            })
+          }
+        </div>
       </Dropzone>
     );
   }
