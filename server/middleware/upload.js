@@ -41,16 +41,20 @@ const upload = async (ctx, next) => {
   }
 };
 
-const addFolder = async (ctx) => {
-  const { key, username } = ctx.params; // TODO Verify folderName is ok
-  logger.info(`Adding folder at ${key} for ${username}`);
-  await s3.putObject({
-    Body: '',
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${username}/${key}/`,
-  }).promise();
-
-  ctx.status = 204;
+const addFolder = async (ctx, next) => {
+  if (ctx.url.startsWith('/folders') && ctx.request.method === 'PUT') {
+    const path = ctx.url.substring('/folders'.length);
+    const { username } = ctx.params; // TODO Verify folderName is ok
+    logger.info(`Adding folder at ${path} for ${username}`);
+    await s3.putObject({
+      Body: '',
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${username}${path}/`,
+    }).promise();
+    ctx.status = 204;
+  } else {
+    await next();
+  }
 };
 
 module.exports = { remove, upload, addFolder };

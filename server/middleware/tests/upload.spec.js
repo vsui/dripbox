@@ -12,7 +12,7 @@ jest.mock('fs', () => ({
 process.env.BUCKET_NAME = 'testBucket';
 
 const s3 = require('../../util/s3');
-const { remove, upload } = require('../upload');
+const { remove, upload, addFolder } = require('../upload');
 
 describe('remove middleware', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -300,5 +300,81 @@ describe('upload middleware', () => {
     const next = jest.fn();
     await upload(ctx, next);
     expect(next).toHaveBeenCalled();
+  });
+});
+
+describe('addFolder middleware', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('should call next if the url does not start with /folders', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'PUT' },
+      url: '/files/blah',
+    };
+    const mockNext = jest.fn();
+    await addFolder(ctx, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+
+  it('should do nothing if the url does not start with /folders', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'PUT' },
+      url: '/files/blah',
+    };
+    const mockNext = jest.fn();
+    await addFolder(ctx, mockNext);
+    expect(s3.putObject).not.toHaveBeenCalled();
+  });
+
+  it('should call next if the method is not PUT', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'POST' },
+      url: '/folders/blah',
+    };
+    const mockNext = jest.fn();
+    await addFolder(ctx, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+
+  it('should do nothing if the method is not PUT', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'POST' },
+      url: '/folders/blah',
+    };
+    const mockNext = jest.fn();
+    await addFolder(ctx, mockNext);
+    expect(s3.putObject).not.toHaveBeenCalled();
+  });
+
+  it('should call S3 to create a folder (root)', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'PUT' },
+      url: '/folders/blah',
+    };
+    await addFolder(ctx);
+    expect(s3.putObject).toHaveBeenCalledWith({
+      Key: 'me/blah/',
+      Body: '',
+      Bucket: 'testBucket',
+    });
+  });
+
+  it('should call S3 to create a folder (not root)', async () => {
+    const ctx = {
+      params: { username: 'me' },
+      request: { method: 'PUT' },
+      url: '/folders/blah/child/horovod',
+    };
+    await addFolder(ctx);
+    expect(s3.putObject).toHaveBeenCalledWith({
+      Key: 'me/blah/child/horovod/',
+      Body: '',
+      Bucket: 'testBucket',
+    });
   });
 });

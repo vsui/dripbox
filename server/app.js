@@ -5,7 +5,7 @@ const Router = require('koa-router');
 const auth = require('./middleware/auth');
 const formidable = require('koa2-formidable');
 
-const { download, list, listFolder } = require('./middleware/download');
+const { download, listFolder } = require('./middleware/download');
 const { remove, upload, addFolder } = require('./middleware/upload');
 const logger = require('./util/logger');
 const credentialStore = require('./util/credentialStore');
@@ -30,25 +30,19 @@ credentialStore.then((store) => {
     logger.info(`${ctx.request.method} ${ctx.url} - ${ctx.status}`);
   });
 
-  const secured = new Router();
   const unsecured = new Router();
 
   unsecured
     .post('/login', login)
     .post('/register', register);
 
-  secured
-    .use(verify)
-    .get('/files', list)
-    .put('/folders/:key', addFolder);
 
   app
     .use(unsecured.routes())
     .use(unsecured.allowedMethods())
-    .use(secured.routes())
-    .use(secured.allowedMethods())
     .use(verify)
     .use(remove)
+    .use(addFolder)
     .use(download)
     .use(formidable())
     .use(upload)
