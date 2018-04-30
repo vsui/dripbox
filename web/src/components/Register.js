@@ -1,11 +1,20 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import jwt from 'jsonwebtoken';
+import styled from 'styled-components';
 
-import { Input, Button } from '../styled';
+import { StyledLink, Input, Button, ErrorSpan } from '../styled';
 import { register } from '../utils/api';
+
+const Div = styled.div`
+  width: 300px;
+  margin: 15% auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
 
 class Register extends Component {
   static propTypes = {
@@ -76,13 +85,12 @@ class Register extends Component {
     } = this.state;
 
     return (
-      <div>
+      <Div>
         <Input
           value={username}
           placeholder="Username"
           onChange={this.onUsernameChange}
         />
-        { usernameError }
         <Input
           value={password}
           placeholder="Password (min. 8 characters)"
@@ -98,16 +106,22 @@ class Register extends Component {
           onChange={this.onConfirmedPasswordChange}
           minlength="8"
         />
-        { passwordError }
+        {/* <div style={{ height: 20 }}>
+          { passwordError }
+        </div> */}
         <Button
           disabled={usernameError !== '' || passwordError !== ''}
           onClick={this.onClickRegister}
         >
           Sign up
         </Button>
-
-        <Link to="/login">Login</Link>
-      </div>
+        <StyledLink to="/login" primary>
+          Or login
+        </StyledLink>
+        <ErrorSpan>
+          { usernameError || passwordError }
+        </ErrorSpan>
+      </Div>
     );
   }
 }

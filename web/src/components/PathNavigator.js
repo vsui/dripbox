@@ -7,7 +7,7 @@ const PathNavigator = ({ path, prefix }) => (
   <div>
     {
       pathToList(path).map(({ absolute, relative }) =>
-        <Link key={absolute} to={pathJoin(prefix, absolute)}>{relative}</Link>)
+        <Link key={absolute} to={pathJoin(prefix, absolute)}>{relative} -> </Link>)
     }
   </div>
 );

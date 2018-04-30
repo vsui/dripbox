@@ -24,7 +24,7 @@ File.propTypes = {
   fileSize: PropTypes.number.isRequired,
   lastModified: PropTypes.string.isRequired,
   deleteFile: PropTypes.func.isRequired,
-  fullPath: PropTypes.func.isRequired,
+  fullPath: PropTypes.string.isRequired,
 };
 
 const mapDispatchToProps = (dispatch, props) => ({

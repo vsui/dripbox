@@ -2,7 +2,7 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  Link,
+  Redirect,
 } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -16,10 +16,17 @@ import Login from './routes/Login';
 const App = () => (
   <Router>
     <div>
-      <Link to="/home">Go home</Link>
       <Header />
       <Route exact path="/" component={Landing} />
       <Route exact path="/login" component={Login} />
+      <ProtectedRoute
+        exact
+        path="/logout"
+        component={() => {
+          localStorage.removeItem('token');
+          return <Redirect to="/login" />;
+        }}
+      />
       <ProtectedRoute
         path="/home"
         component={Home}

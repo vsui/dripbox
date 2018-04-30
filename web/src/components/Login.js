@@ -3,11 +3,20 @@ import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import jwt from 'jsonwebtoken';
+import styled from 'styled-components';
 
-import { Input, Button } from '../styled';
+import { Input, Button, StyledLink } from '../styled';
 import { login } from '../utils/api';
 import store from '../redux/store';
 import { LIST_FILES_REQUESTED } from '../redux/actions';
+
+const Div = styled.div`
+  width: 300px;
+  margin: 15% auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
 
 class Login extends Component {
   static propTypes = {
@@ -41,7 +50,7 @@ class Login extends Component {
   render() {
     const { username, password } = this.state;
     return (
-      <div>
+      <Div>
         <Input
           value={username}
           placeholder="Username"
@@ -49,12 +58,15 @@ class Login extends Component {
         />
         <Input
           value={password}
-          placeholder="Password (min. 10 characters)"
+          placeholder="Password"
           type="password"
           onChange={this.onPasswordChange}
         />
         <Button onClick={this.onLoginClick}>Login</Button>
-      </div>
+        <StyledLink to="/" primary>
+          Or register
+        </StyledLink>
+      </Div>
     );
   }
 }
