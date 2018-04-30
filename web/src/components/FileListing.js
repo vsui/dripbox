@@ -96,40 +96,39 @@ class FileListing extends Component {
       );
     }
     return (
-      <div>
-        { props.location.pathname }
+      <Dropzone
+        style={{ height: '100%', width: '100%' }}
+        activeStyle={{ backgroundColor: 'red' }}
+        acceptStyle={{ backgroundColor: 'green' }}
+        disableClick
+        onDrop={files =>
+          files.map(file =>
+            this.uploadFile(file))}
+      >
         <PathNavigator prefix="/home" path={props.location.pathname.substring(5)} />
         <FolderAdder />
-        <button onClick={props.refresh}>Refresh</button>
-        <Dropzone
-          disableClick
-          onDrop={files =>
-            files.map(file =>
-              this.uploadFile(file))}
-        >
-          {
-            this.state.files.map((file) => {
-              if (file.fileName.endsWith('/')) {
-                return (
-                  <Folder
-                    key={file.fileName}
-                    {...file}
-                    folderName={file.fileName.slice(0, -1)}
-                  />
-                );
-              }
+        {
+          this.state.files.map((file) => {
+            if (file.fileName.endsWith('/')) {
               return (
-                <File
+                <Folder
                   key={file.fileName}
-                  deleteFile={() => this.deleteFile(file)}
                   {...file}
-                  fullPath={pathJoin(props.path, file.fileName)}
+                  folderName={file.fileName.slice(0, -1)}
                 />
               );
-            })
-          }
-        </Dropzone>
-      </div>
+            }
+            return (
+              <File
+                key={file.fileName}
+                deleteFile={() => this.deleteFile(file)}
+                {...file}
+                fullPath={pathJoin(props.path, file.fileName)}
+              />
+            );
+          })
+        }
+      </Dropzone>
     );
   }
 }

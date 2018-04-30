@@ -1,9 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
 
 import { download } from '../utils/api';
+import { Button } from '../styled';
 import { REMOVE_FILE_REQUESTED } from '../redux/actions';
+
+const Div = styled.div`
+  display: flex;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: ${props => props.theme.primary};
+  font-size: 1.25em;
+  padding: 5px 5px;
+`;
 
 const File = ({
   fileName,
@@ -12,11 +23,18 @@ const File = ({
   fullPath,
   deleteFile,
 }) => (
-  <div>
-    { fileName } { fileSize } {lastModified }
-    <button onClick={() => download(fullPath, fileName)}>Download</button>
-    <button onClick={deleteFile}>Remove</button>
-  </div>
+  <Div>
+    { fileName }
+    <div style={{
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    }}>
+      <Button style={{ fontSize: '0.75em' }} onClick={() => download(fullPath, fileName)}>Download</Button>
+      <Button style={{ fontSize: '0.75em' }} onClick={deleteFile}>Remove</Button>
+    </div>
+  </Div>
 );
 
 File.propTypes = {
