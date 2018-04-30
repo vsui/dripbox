@@ -1,28 +1,28 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
-import { ADD_FOLDER_REQUESTED } from '../redux/actions';
+import { Button, Input } from '../styled';
 
 class FolderAdder extends Component {
+  static propTypes = {
+    createFolder: PropTypes.func.isRequired,
+  }
+
   state = {
     folderName: '',
   };
 
   onChange = e => this.setState({ folderName: e.target.value })
-  onClick = () => this.props.addFolder(this.state.folderName)
+  onClick = () => this.props.createFolder(this.state.folderName)
 
   render() {
     return (
       <div>
-        <input onChange={this.onChange} value={this.state.folderName} />
-        <button onClick={this.onClick}>Add folder</button>
+        <Input onChange={this.onChange} value={this.state.folderName} />
+        <Button onClick={this.onClick}>Add folder</Button>
       </div>
     );
   }
-};
+}
 
-const mapDispatchToProps = dispatch => ({
-  addFolder: folderName => dispatch({ type: ADD_FOLDER_REQUESTED, folderName }),
-});
-
-export default connect(null, mapDispatchToProps)(FolderAdder);
+export default FolderAdder;

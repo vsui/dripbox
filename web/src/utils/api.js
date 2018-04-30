@@ -189,7 +189,7 @@ const putFolder = async (folderName) => {
   if (token === null) {
     return Promise.reject(new Error('Token unavailable'));
   }
-  const res = await fetch(`${API_URL}/folders/${folderName}`, {
+  const res = await fetch(pathJoin(`${API_URL}/folders/`, folderName), {
     method: 'PUT',
     headers: new Headers({
       Authorization: `Bearer ${token}`,

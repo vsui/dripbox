@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Dropzone from 'react-dropzone';
 import { withRouter } from 'react-router';
 import { toast } from 'react-toastify';
-import isInPath, { pathJoin } from '../utils/path';
+import { pathJoin } from '../utils/path';
 
-import { LIST_FILES_REQUESTED, UPLOAD_FILE_REQUESTED } from '../redux/actions';
-import { listFolder, upload, remove } from '../utils/api';
+import { listFolder, upload, remove, putFolder } from '../utils/api';
 import File from './File';
 import Folder from './Folder';
 import FolderAdder from './FolderAdder';
@@ -66,6 +64,19 @@ class FileListing extends Component {
       });
   }
 
+  createFolder = (folderName) => {
+    putFolder(pathJoin(this.props.path, folderName))
+      .then(() => {
+        this.setState({
+          files: [{ fileName: `${folderName}/` }, ...this.state.files],
+        });
+        toast('Added folder...');
+      })
+      .catch(() => {
+        toast('Add folder failed');
+      });
+  }
+
   deleteFile(file) {
     remove(pathJoin(this.props.path, file.fileName))
       .then(() => {
@@ -107,7 +118,7 @@ class FileListing extends Component {
       >
         <div>
           <PathNavigator prefix="/home" path={props.location.pathname.substring(5)} />
-          <FolderAdder />
+          <FolderAdder createFolder={this.createFolder} />
           {
             this.state.files.map((file) => {
               if (file.fileName.endsWith('/')) {
@@ -135,16 +146,4 @@ class FileListing extends Component {
   }
 }
 
-// TODO move more logic into mappers
-const mapStateToProps = state => ({
-  files: state.files.filter(file => isInPath(state.path, file.fileName)),
-});
-const mapDispatchToProps = dispatch => ({
-  refresh: () => dispatch({ type: LIST_FILES_REQUESTED }),
-  upload: (name, file) => dispatch({ type: UPLOAD_FILE_REQUESTED, name, file }),
-});
-
-export default withRouter(connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(FileListing));
+export default withRouter(FileListing);
