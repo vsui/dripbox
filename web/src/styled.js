@@ -6,7 +6,7 @@ const Header = styled.div`
   color: ${props => props.theme.secondary};
   h1 {
     font-size: ${props => props.onRegister ? '2em' : '0em'};
-    transition font-size 0.5s;
+    transition font-size 0.2s;
     margin: 0 0;
     padding: 0 0;
   }

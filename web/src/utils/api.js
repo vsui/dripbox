@@ -78,6 +78,29 @@ const download = async (key, fileName) => {
   return blob;
 };
 
+const get = async (key) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    console.log('No token');
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const path = pathJoin(`${API_URL}/files`, key);
+  const res = await fetch(path, {
+    method: 'GET',
+    headers: new Headers({ Authorization: `Bearer ${token}` }),
+  });
+  if (res.status === 401) {
+    console.log('Not authorized');
+    return Promise.reject(new Error('Not authorized'));
+  }
+  if (res.status !== 200) {
+    console.log(`Unknown error ${res.status}`);
+    return Promise.reject(new Error('Unknown error'));
+  }
+  const blob = await res.blob();
+  return blob;
+};
+
 const list = async () => {
   const token = localStorage.getItem('token');
   if (token === null) {
@@ -226,6 +249,7 @@ export {
   login,
   register,
   list,
+  get,
   listFolder,
   download,
   remove,

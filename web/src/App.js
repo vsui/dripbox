@@ -15,7 +15,7 @@ import Login from './routes/Login';
 
 const App = () => (
   <Router>
-    <div>
+    <div style={{ height: '100vh' }}>
       <Header />
       <Route exact path="/" component={Landing} />
       <Route exact path="/login" component={Login} />

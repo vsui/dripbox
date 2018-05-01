@@ -12,7 +12,7 @@ const Header = (props) => {
   return (
     <H onRegister={path === '/'}>
       <Nav>
-        <StyledLink to="/home">Squidbox</StyledLink>
+        <StyledLink to="/">Squidbox</StyledLink>
         <StyledLink to="/home">Home</StyledLink>
         {
           token !== null &&
