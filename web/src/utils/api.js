@@ -204,6 +204,29 @@ const putFolder = async (folderName) => {
   return Promise.reject();
 };
 
+const deleteFolder = async (folderName) => {
+  if (folderName === '') {
+    throw new Error('Folder must have a name');
+  }
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const res = await fetch(pathJoin(`${API_URL}/folders`, folderName), {
+    method: 'DELETE',
+    headers: new Headers({
+      Authorization: `Bearer ${token}`,
+    }),
+  });
+  if (res.status === 404) {
+    return Promise.reject(new Error('Not authorized'));
+  }
+  if (res.status === 204) {
+    return Promise.resolve();
+  }
+  return Promise.reject();
+}
+
 export {
   login,
   register,
@@ -213,4 +236,5 @@ export {
   remove,
   upload,
   putFolder,
+  deleteFolder,
 };

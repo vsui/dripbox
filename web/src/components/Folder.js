@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import styled from 'styled-components';
 
 import { changePath } from '../redux/actions';
-import { StyledLink } from '../styled';
+import { StyledLink, Button } from '../styled';
 import { pathJoin } from '../utils/path';
 
 const Div = styled.div`
@@ -23,12 +22,14 @@ const Folder = (props) => {
   return (
     <Div>
       <StyledLink style={{ fontSize: '1.25em' }} primary to={pathJoin(pathname, props.folderName)}>{props.folderName}<br /></StyledLink>
+      <Button onClick={props.removeFolder}>Remove</Button>
     </Div>
   );
 };
 
 Folder.propTypes = {
   folderName: PropTypes.string.isRequired,
+  removeFolder: PropTypes.func.isRequired,
   location: PropTypes.shape({
     pathname: PropTypes.string.isRequired,
   }).isRequired,

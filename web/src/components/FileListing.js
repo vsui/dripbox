@@ -5,7 +5,7 @@ import { withRouter } from 'react-router';
 import { toast } from 'react-toastify';
 import { pathJoin } from '../utils/path';
 
-import { listFolder, upload, remove, putFolder } from '../utils/api';
+import { listFolder, upload, remove, putFolder, deleteFolder } from '../utils/api';
 import File from './File';
 import Folder from './Folder';
 import FolderAdder from './FolderAdder';
@@ -88,6 +88,18 @@ class FileListing extends Component {
       });
   }
 
+  removeFolder(folderName) {
+    deleteFolder(pathJoin(this.props.path, folderName))
+      .then(() => {
+        this.setState({
+          files: this.state.files.filter(({ fileName }) => fileName !== `${folderName}/`),
+        });
+      })
+      .catch(() => {
+        toast('Delete folder failed');
+      });
+  }
+
   _loadFiles(path) {
     this._asyncRequest = listFolder(path)
       .then((files) => {
@@ -126,6 +138,7 @@ class FileListing extends Component {
                   <Folder
                     key={file.fileName}
                     {...file}
+                    removeFolder={() => this.removeFolder(file.fileName.slice(0, -1))}
                     folderName={file.fileName.slice(0, -1)}
                   />
                 );
