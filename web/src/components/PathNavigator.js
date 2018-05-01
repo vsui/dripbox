@@ -10,7 +10,7 @@ const PathNavigator = ({ path, prefix }) => (
         <StyledLink
           primary
           key={absolute}
-          to={pathJoin(prefix, absolute)}
+          to={absolute !== '/' ? pathJoin(prefix, absolute) : prefix}
           style={{
             fontSize: '2em',
             textDecoration: 'none',
