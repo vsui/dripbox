@@ -22,7 +22,15 @@ const Folder = (props) => {
   return (
     <Div>
       <StyledLink style={{ fontSize: '1.25em' }} primary to={pathJoin(pathname, props.folderName)}>{props.folderName}<br /></StyledLink>
-      <Button onClick={props.removeFolder}>Remove</Button>
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+      }}
+      >
+        <Button onClick={props.removeFolder}>Remove</Button>
+      </div>
     </Div>
   );
 };
