@@ -3,7 +3,6 @@
  */
 
 import FileSaver from 'file-saver';
-import { toast } from 'react-toastify';
 import { pathJoin } from '../utils/path';
 
 // TODO MOVE INTO .env
@@ -62,7 +61,6 @@ const download = async (key, fileName) => {
     return Promise.reject(new Error('Token unavailable'));
   }
   const path = pathJoin(`${API_URL}/files`, key);
-  toast(`Downloading ${path}`);
   const res = await fetch(path, {
     method: 'GET',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
@@ -109,7 +107,6 @@ const listFolder = async (path) => {
     return Promise.reject(new Error('Token unavailable'));
   }
   const fetchPath = pathJoin(`${API_URL}/folders`, path);
-  toast(`Listing ${fetchPath}`);
   const res = await fetch(fetchPath, {
     method: 'GET',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
@@ -133,7 +130,6 @@ const remove = async (key) => {
     return Promise.reject(new Error('Token unavailable'));
   }
   const fetchPath = pathJoin(`${API_URL}/files`, key);
-  toast(`Deleting ${fetchPath}`);
   const res = await fetch(fetchPath, {
     method: 'DELETE',
     headers: new Headers({ Authorization: `Bearer ${token}` }),
@@ -161,7 +157,6 @@ const upload = async (key, blob) => {
   const fetchPath = pathJoin(`${API_URL}/files`, key);
   const formData = new FormData();
   formData.append('upload', blob);
-  toast(`Uploading ${fetchPath}`);
   const res = await fetch(fetchPath, {
     method: 'PUT',
     body: formData,
