@@ -7,8 +7,9 @@ module.exports = MongoClient.connect(process.env.MONGO_URL)
     process.exit(1);
   })
   .then((client) => {
-    const db = client.db('auth');
+    const db = client.db('dripbox');
     const credentialStore = db.collection('credentials');
+    const sharedStore = db.collection('shared');
     logger.info('Connected to MongoDB instance');
-    return credentialStore;
+    return { credentialStore, sharedStore };
   });

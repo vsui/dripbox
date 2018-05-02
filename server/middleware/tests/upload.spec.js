@@ -35,7 +35,14 @@ jest.mock('fs', () => ({
 process.env.BUCKET_NAME = 'testBucket';
 
 const s3 = require('../../util/s3');
-const { remove, upload, addFolder, removeFolder } = require('../upload');
+
+const mockSharedStore = jest.mock();
+const {
+  remove,
+  upload,
+  addFolder,
+  removeFolder,
+} = require('../upload')(mockSharedStore);
 
 describe('remove middleware', () => {
   beforeEach(() => jest.clearAllMocks());

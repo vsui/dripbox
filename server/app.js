@@ -3,20 +3,22 @@ const cors = require('@koa/cors');
 const Koa = require('koa');
 const Router = require('koa-router');
 const auth = require('./middleware/auth');
+const downloadMiddleware = require('./middleware/download');
+const uploadMiddleware = require('./middleware/upload');
 const formidable = require('koa2-formidable');
 
-const { download, listFolder } = require('./middleware/download');
-const {
-  remove,
-  upload,
-  addFolder,
-  removeFolder,
-} = require('./middleware/upload');
 const logger = require('./util/logger');
-const credentialStore = require('./util/credentialStore');
+const stores = require('./util/credentialStore');
 
-credentialStore.then((store) => {
-  const { login, register, verify } = auth(store);
+stores.then(({ credentialStore, sharedStore }) => {
+  const { login, register, verify } = auth(credentialStore);
+  const { download, listFolder } = downloadMiddleware(sharedStore);
+  const {
+    remove,
+    upload,
+    addFolder,
+    removeFolder,
+  } = uploadMiddleware(sharedStore);
 
   const app = new Koa();
   app.use(cors());
@@ -40,7 +42,6 @@ credentialStore.then((store) => {
   unsecured
     .post('/login', login)
     .post('/register', register);
-
 
   app
     .use(unsecured.routes())

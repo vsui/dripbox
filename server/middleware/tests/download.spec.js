@@ -36,7 +36,8 @@ jest.mock('../../util/s3', () => ({
 
 const s3 = require('../../util/s3');
 
-const { download, list, listFolder } = require('../download');
+const mockSharedStore = jest.mock();
+const { download, list, listFolder } = require('../download')(mockSharedStore);
 
 describe('download middleware', () => {
   beforeEach(() => jest.clearAllMocks());
