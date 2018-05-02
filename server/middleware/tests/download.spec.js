@@ -36,8 +36,18 @@ jest.mock('../../util/s3', () => ({
 
 const s3 = require('../../util/s3');
 
-const mockSharedStore = jest.mock();
-const { download, list, listFolder } = require('../download')(mockSharedStore);
+const mockSharedStore = {
+  insertOne: jest.fn(),
+  findOne: jest.fn().mockImplementation(({ id }) => ({ key: `key-${id}` })),
+};
+
+const {
+  download,
+  list,
+  listFolder,
+  listSharedFolder,
+  downloadSharedFile,
+} = require('../download')(mockSharedStore);
 
 describe('download middleware', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -268,5 +278,128 @@ describe('listFolder middleware', () => {
   it('does nothing if the method is not GET', async () => {
     await listFolder({ url: '/folders', request: { method: 'PUT' } });
     expect(s3.listObjectsV2).not.toHaveBeenCalled();
+  });
+});
+
+describe('downloadSharedFile middleware', () => {
+  beforeEach(() => jest.clearAllMocks());
+  it('should not do anything if the url has the incorrect prefix or the method is not GET', async () => {
+    const mockNext = jest.fn();
+    await downloadSharedFile({ request: { method: 'POST' }, url: '/shared/files/file.txt' }, mockNext);
+    await downloadSharedFile({ request: { method: 'GET' }, url: '/share/folders/file.txt' }, mockNext);
+    expect(mockSharedStore.insertOne).not.toHaveBeenCalled();
+  });
+  it('should call next if the url has the incorrect prefix or the method is not GET', async () => {
+    const mockNext = jest.fn();
+    await downloadSharedFile({ request: { method: 'POST' }, url: '/shared/files/file.txt' }, mockNext);
+    await downloadSharedFile({ request: { method: 'GET' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+  it('should set the body to the contents of the file', async () => {
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/files/1234abcd',
+    };
+    await downloadSharedFile(ctx, null);
+    expect(ctx.body).toBe('Contents of key-1234abcd');
+  });
+  it('should set the body of the contents of the file (shared folder)', async () => {
+    mockSharedStore.findOne = jest.fn().mockImplementation(({ id }) => {
+      if (id === '1234abcd') {
+        return 'folder';
+      }
+      return null;
+    });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/files/1234abcd/file.txt',
+    };
+    await downloadSharedFile(ctx, null);
+    expect(ctx.body).toBe('Contents of key-sharedfolder/file.txt');
+  })
+  it('should set the status to 200', async () => {
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/files/1234abcd',
+    };
+    await downloadSharedFile(ctx, null);
+    expect(ctx.status).toBe(200);
+  });
+  it('should set the status to 404 if the id is not in the store', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue(null);
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/files/1234abcd',
+    };
+    await downloadSharedFile(ctx, null);
+    expect(ctx.status).toBe(404);
+  });
+});
+
+describe('listSharedFolder middleware', () => {
+  beforeEach(() => jest.clearAllMocks());
+  it('should not do anything if the url has the incorrect prefix or the method is not GET', async () => {
+    const mockNext = jest.fn();
+    await listSharedFolder({ request: { method: 'POST' }, url: '/shared/folders/folder' }, mockNext);
+    await listSharedFolder({ request: { method: 'GET' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockSharedStore.insertOne).not.toHaveBeenCalled();
+  });
+  it('should call next if the url has the incorrect prefix or the method is not GET', async () => {
+    const mockNext = jest.fn();
+    await listSharedFolder({ request: { method: 'POST' }, url: '/shared/folders/folder' }, mockNext);
+    await listSharedFolder({ request: { method: 'GET' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+  it('should set status to 404 if the id is not found', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue(null);
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/folders/1234abcd',
+    };
+    await listSharedFolder(ctx, null);
+    expect(ctx.status).toBe(404);
+  });
+  it('should list the contents of the shared folder (root)', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue({ key: 'me/foods' });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/folders/1234abcd',
+    };
+    await listSharedFolder(ctx, null);
+    expect(ctx.body).toEqual([
+      { fileName: 'me/foods/apple.txt', lastModified: 'last year', size: 3000 },
+      { fileName: 'me/foods/banana.txt', lastModified: 'never', size: 343 },
+      { fileName: 'me/foods/recipes/', lastModified: 'never', size: 343 },
+    ]);
+  });
+  it('should set status to 200 (root)', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue({ key: 'me/foods' });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/folders/1234abcd',
+    };
+    await listSharedFolder(ctx, null);
+    expect(ctx.status).toBe(200);
+  });
+  it('should list the contents of the shared folder (not root)', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue({ key: 'me/foods' });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/folders/1234abcd',
+    };
+    await listSharedFolder(ctx, null);
+    expect(ctx.body).toEqual([
+      { fileName: 'watermelon.hs', lastModified: 'never', size: 343 },
+      { fileName: 'gingermelon.cpp', lastModified: 'never', size: 343 },
+    ]);
+  });
+  it('should set status to 200 ( not root)', async () => {
+    mockSharedStore.findOne = jest.fn().mockResolvedValue({ key: 'me/foods' });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/folders/1234abcd/recipes',
+    };
+    await listSharedFolder(ctx, null);
+    expect(ctx.status).toBe(200);
   });
 });

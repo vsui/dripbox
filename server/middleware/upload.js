@@ -1,6 +1,7 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
 const fs = require('fs');
+const uuid = require('uuid/v4');
 
 module.exports = sharedStore => ({
   async remove(ctx, next) {
@@ -96,16 +97,21 @@ module.exports = sharedStore => ({
   },
 
   async shareFile(ctx, next) {
-    if (ctx.url.startsWith('/share/files') && ctx.request.method === 'POST') {
-      const path = ctx.url.substring('/files'.length);
+    if (ctx.url.startsWith('/shared/files') && ctx.request.method === 'POST') {
+      const path = ctx.url.substring('/shared/files'.length);
       const { username } = ctx.params;
+      const key = `${username}${path}`;
       try {
         await s3.getObject({ // Check if object is available
           Bucket: process.env.BUCKET_NAME,
-          Key: `${username}${path}`,
+          Key: key,
         }).promise();
+        const id = uuid();
+        await sharedStore.insertOne({ key, id });
+        ctx.status = 200;
+        ctx.body = { id };
       } catch (err) {
-        logger.err(err.message);
+        logger.error(err.message);
         ctx.status = 404;
       }
     } else {
@@ -114,16 +120,21 @@ module.exports = sharedStore => ({
   },
 
   async shareFolder(ctx, next) {
-    if (ctx.url.startsWith('/share/folders') && ctx.request.method === 'POST') {
-      const path = ctx.url.substring('/files'.length);
+    if (ctx.url.startsWith('/shared/folders') && ctx.request.method === 'POST') {
+      const path = ctx.url.substring('/shared/folders'.length);
       const { username } = ctx.params;
+      const key = `${username}${path}/`;
       try {
         await s3.getObject({
           Bucket: process.env.BUCKET_NAME,
-          Key: `${username}${path}/`,
+          Key: key,
         }).promise();
+        const id = uuid();
+        await sharedStore.insertOne({ key, id });
+        ctx.status = 200;
+        ctx.body = { id };
       } catch (err) {
-        logger.err(err.message);
+        logger.error(err.message);
         ctx.status = 404;
       }
     } else {

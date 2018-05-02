@@ -12,12 +12,19 @@ const stores = require('./util/credentialStore');
 
 stores.then(({ credentialStore, sharedStore }) => {
   const { login, register, verify } = auth(credentialStore);
-  const { download, listFolder } = downloadMiddleware(sharedStore);
+  const {
+    download,
+    listFolder,
+    downloadSharedFile,
+    listSharedFolder,
+  } = downloadMiddleware(sharedStore);
   const {
     remove,
     upload,
     addFolder,
     removeFolder,
+    shareFile,
+    shareFolder,
   } = uploadMiddleware(sharedStore);
 
   const app = new Koa();
@@ -46,11 +53,15 @@ stores.then(({ credentialStore, sharedStore }) => {
   app
     .use(unsecured.routes())
     .use(unsecured.allowedMethods())
+    .use(downloadSharedFile)
+    .use(listSharedFolder)
     .use(verify)
     .use(remove)
     .use(addFolder)
     .use(download)
     .use(removeFolder)
+    .use(shareFile)
+    .use(shareFolder)
     .use(formidable())
     .use(upload)
     .use(listFolder);

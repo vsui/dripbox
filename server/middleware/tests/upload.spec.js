@@ -1,4 +1,6 @@
 jest.mock('../../util/s3', () => ({
+  getObject: jest.fn()
+    .mockReturnValue({ promise: jest.fn() }),
   deleteObject: jest.fn()
     .mockReturnValue({ promise: jest.fn() }),
   putObject: jest.fn()
@@ -32,16 +34,22 @@ jest.mock('fs', () => ({
   createReadStream: jest.fn().mockReturnValue('stream'),
 }));
 
+jest.mock('uuid/v4', () => jest.fn(() => '1234-abcd'));
+
 process.env.BUCKET_NAME = 'testBucket';
 
 const s3 = require('../../util/s3');
 
-const mockSharedStore = jest.mock();
+const mockSharedStore = {
+  insertOne: jest.fn(),
+};
 const {
   remove,
   upload,
   addFolder,
   removeFolder,
+  shareFile,
+  shareFolder,
 } = require('../upload')(mockSharedStore);
 
 describe('remove middleware', () => {
@@ -553,5 +561,98 @@ describe('removeFolder middleware', () => {
     };
     await removeFolder(ctx);
     expect(s3.deleteObjects).not.toHaveBeenCalled();
+  });
+});
+
+// TODO test for shareFile if file does not exist / has already been shared / id collision
+describe('shareFile middleware', () => {
+  beforeEach(() => jest.clearAllMocks());
+  it('should not do anything if the url has the incorrect prefix or the method is not POST', async () => {
+    const mockNext = jest.fn();
+    await shareFile({ request: { method: 'GET' }, url: '/shared/files/file.txt' }, mockNext);
+    await shareFile({ request: { method: 'POST' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockSharedStore.insertOne).not.toHaveBeenCalled();
+  });
+  it('should call next if the url has the incorrect prefix or the method is not POST', async () => {
+    const mockNext = jest.fn();
+    await shareFile({ request: { method: 'GET' }, url: '/shared/files/file.txt' }, mockNext);
+    await shareFile({ request: { method: 'POST' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+  it('should insert the file into the shared store', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/files/folder/file.txt',
+    };
+    await shareFile(ctx, null);
+    expect(mockSharedStore.insertOne).toHaveBeenCalledWith({
+      key: 'me/folder/file.txt',
+      id: '1234-abcd',
+    });
+  });
+  it('should return the id on success', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/files/folder/file.txt',
+    };
+    await shareFile(ctx, null);
+    expect(ctx.body).toEqual({ id: '1234-abcd' });
+  });
+  it('should set status to 200 on success', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/files/folder/file.txt',
+    };
+    await shareFile(ctx, null);
+    expect(ctx.status).toEqual(200);
+  });
+});
+
+describe('shareFolder middleware', () => {
+  beforeEach(() => jest.clearAllMocks());
+  it('should not do anything if the url has the incorrect prefix or the method is not POST', async () => {
+    const mockNext = jest.fn();
+    await shareFolder({ request: { method: 'GET' }, url: '/shared/folders/file.txt' }, mockNext);
+    await shareFolder({ request: { method: 'POST' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockSharedStore.insertOne).not.toHaveBeenCalled();
+  });
+  it('should call next if the url has the incorrect prefix or the method is not POST', async () => {
+    const mockNext = jest.fn();
+    await shareFolder({ request: { method: 'GET' }, url: '/shared/folders/file.txt' }, mockNext);
+    await shareFolder({ request: { method: 'POST' }, url: '/share/files/file.txt' }, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+  it('should insert the folder into the shared store', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/folders/folder/child',
+    };
+    await shareFolder(ctx, null);
+    expect(mockSharedStore.insertOne).toHaveBeenCalledWith({
+      key: 'me/folder/child/',
+      id: '1234-abcd',
+    });
+  });
+  it('should return the id on success', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/folders/folder/child',
+    };
+    await shareFolder(ctx, null);
+    expect(ctx.body).toEqual({ id: '1234-abcd' });
+  });
+  it('should set status to 200 on success', async () => {
+    const ctx = {
+      request: { method: 'POST' },
+      params: { username: 'me' },
+      url: '/shared/folders/folder/child',
+    };
+    await shareFolder(ctx, null);
+    expect(ctx.status).toEqual(200);
   });
 });
