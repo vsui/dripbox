@@ -301,7 +301,7 @@ describe('downloadSharedFile middleware', () => {
       url: '/shared/files/1234abcd',
     };
     await downloadSharedFile(ctx, null);
-    expect(ctx.body).toBe('Contents of key-1234abcd');
+    expect(ctx.body).toEqual({ fileName: 'key-1234abcd', blob: 'Contents of key-1234abcd' });
   });
   it('should set the body of the contents of the file (shared folder)', async () => {
     mockSharedStore.findOne = jest.fn().mockImplementation(({ id }) => {
@@ -315,7 +315,7 @@ describe('downloadSharedFile middleware', () => {
       url: '/shared/files/1234abcd/file.txt',
     };
     await downloadSharedFile(ctx, null);
-    expect(ctx.body).toBe('Contents of sharedfolder/file.txt');
+    expect(ctx.body).toEqual({ fileName: 'file.txt', blob: 'Contents of sharedfolder/file.txt' });
   });
   it('should call getObject with correct parameters', async () => {
     mockSharedStore.findOne = jest.fn().mockImplementation(({ id }) => {

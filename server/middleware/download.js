@@ -100,7 +100,7 @@ module.exports = sharedStore => ({
           Bucket: process.env.BUCKET_NAME,
           Key: key,
         }).promise();
-        ctx.body = response.Body;
+        ctx.body = { fileName: key.substring(key.lastIndexOf('/') + 1), blob: response.Body };
         ctx.status = 200;
       } catch (err) {
         logger.error(err.message);
