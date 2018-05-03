@@ -23,7 +23,16 @@ const isInPath = (path, fileName) => {
   return false;
 };
 
+const splitOnSlash = (path) => {
+  const slashIndex = path.indexOf('/');
+  if (slashIndex === -1) {
+    return [path, ''];
+  }
+  return [path.substring(0, slashIndex), path.substring(slashIndex)];
+};
+
 module.exports = {
   getRelativeUrl,
   isInPath,
+  splitOnSlash,
 };

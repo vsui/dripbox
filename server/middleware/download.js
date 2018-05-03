@@ -1,7 +1,7 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
 
-const { isInPath, getRelativeUrl } = require('../util/helpers');
+const { isInPath, getRelativeUrl, splitOnSlash } = require('../util/helpers');
 
 module.exports = sharedStore => ({
   async download(ctx, next) {
@@ -86,7 +86,8 @@ module.exports = sharedStore => ({
 
   async downloadSharedFile(ctx, next) {
     if (ctx.url.startsWith('/shared/files/') && ctx.request.method === 'GET') {
-      const id = ctx.url.substring('/shared/files/'.length);
+      const path = ctx.url.substring('/shared/files/'.length);
+      const [id, rest] = splitOnSlash(path);
       // id is only first
       try {
         const shared = await sharedStore.findOne({ id });
@@ -94,9 +95,10 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
+        const key = `${shared.key}${rest}`;
         const response = await s3.getObject({
           Bucket: process.env.BUCKET_NAME,
-          Key: shared.key,
+          Key: key,
         }).promise();
         ctx.body = response.Body;
         ctx.status = 200;
@@ -111,7 +113,8 @@ module.exports = sharedStore => ({
 
   async listSharedFolder(ctx, next) {
     if (ctx.url.startsWith('/shared/folders/') && ctx.request.method === 'GET') {
-      const id = ctx.url.substring('/shared/folders/'.length);
+      const path = ctx.url.substring('/shared/folders/'.length);
+      const [id, rest] = splitOnSlash(path);
       // only translate first
       try {
         const shared = await sharedStore.findOne({ id });
@@ -121,7 +124,7 @@ module.exports = sharedStore => ({
         }
         const response = await s3.listObjectsV2({
           Bucket: process.env.BUCKET_NAME,
-          Prefix: `${shared.key}`,
+          Prefix: `${shared.key}${rest}`,
         }).promise();
 
         if (response.Contents.length === 0) {
@@ -129,17 +132,15 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
-
-        const path = shared.key.substring(shared.key.indexOf('/'));
-
+        const pathWithoutUsername = `${shared.key.substring(shared.key.indexOf('/'))}${rest}/`;
         const files = response.Contents.map(contents => ({
           fileName: contents.Key.slice(contents.Key.indexOf('/')),
           fileSize: contents.Size,
           lastModified: contents.LastModified,
         }));
-        const filesInFolder = files.filter(file => isInPath(path, file.fileName));
+        const filesInFolder = files.filter(file => isInPath(pathWithoutUsername, file.fileName));
         const relativePaths = filesInFolder.map(file =>
-          ({ ...file, fileName: getRelativeUrl(path, file.fileName).substring(1) }));
+          ({ ...file, fileName: getRelativeUrl(pathWithoutUsername, file.fileName).substring(1) }));
         ctx.body = relativePaths;
         ctx.status = 200;
       } catch (err) {

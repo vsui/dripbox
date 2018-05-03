@@ -306,7 +306,7 @@ describe('downloadSharedFile middleware', () => {
   it('should set the body of the contents of the file (shared folder)', async () => {
     mockSharedStore.findOne = jest.fn().mockImplementation(({ id }) => {
       if (id === '1234abcd') {
-        return 'folder';
+        return { key: 'sharedfolder' };
       }
       return null;
     });
@@ -315,8 +315,25 @@ describe('downloadSharedFile middleware', () => {
       url: '/shared/files/1234abcd/file.txt',
     };
     await downloadSharedFile(ctx, null);
-    expect(ctx.body).toBe('Contents of key-sharedfolder/file.txt');
-  })
+    expect(ctx.body).toBe('Contents of sharedfolder/file.txt');
+  });
+  it('should call getObject with correct parameters', async () => {
+    mockSharedStore.findOne = jest.fn().mockImplementation(({ id }) => {
+      if (id === '1234abcd') {
+        return { key: 'me/folder' };
+      }
+      return null;
+    });
+    const ctx = {
+      request: { method: 'GET' },
+      url: '/shared/files/1234abcd/file.txt',
+    };
+    await downloadSharedFile(ctx, null);
+    expect(s3.getObject).toHaveBeenCalledWith({
+      Key: 'me/folder/file.txt',
+      Bucket: process.env.BUCKET_NAME,
+    });
+  });
   it('should set the status to 200', async () => {
     const ctx = {
       request: { method: 'GET' },
@@ -367,9 +384,9 @@ describe('listSharedFolder middleware', () => {
     };
     await listSharedFolder(ctx, null);
     expect(ctx.body).toEqual([
-      { fileName: 'me/foods/apple.txt', lastModified: 'last year', size: 3000 },
-      { fileName: 'me/foods/banana.txt', lastModified: 'never', size: 343 },
-      { fileName: 'me/foods/recipes/', lastModified: 'never', size: 343 },
+      { fileName: 'apple.txt', lastModified: 'last year', fileSize: 3000 },
+      { fileName: 'banana.txt', lastModified: 'never', fileSize: 343 },
+      { fileName: 'recipes/', lastModified: 'never', fileSize: 343 },
     ]);
   });
   it('should set status to 200 (root)', async () => {
@@ -385,12 +402,12 @@ describe('listSharedFolder middleware', () => {
     mockSharedStore.findOne = jest.fn().mockResolvedValue({ key: 'me/foods' });
     const ctx = {
       request: { method: 'GET' },
-      url: '/shared/folders/1234abcd',
+      url: '/shared/folders/1234abcd/recipes',
     };
     await listSharedFolder(ctx, null);
     expect(ctx.body).toEqual([
-      { fileName: 'watermelon.hs', lastModified: 'never', size: 343 },
-      { fileName: 'gingermelon.cpp', lastModified: 'never', size: 343 },
+      { fileName: 'watermelon.hs', lastModified: 'never', fileSize: 343 },
+      { fileName: 'gingermelon.cpp', lastModified: 'never', fileSize: 343 },
     ]);
   });
   it('should set status to 200 ( not root)', async () => {

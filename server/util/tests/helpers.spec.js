@@ -1,4 +1,4 @@
-const { getRelativeUrl, isInPath } = require('../helpers');
+const { getRelativeUrl, isInPath, splitOnSlash } = require('../helpers');
 
 describe('getRelativeUrl', () => {
   it('throws if prefix does not match', () => {
@@ -65,5 +65,20 @@ describe('isInPath', () => {
   });
   it('should not accept a file in a folder in the root folder', () => {
     expect(isInPath('/', '/folder/file.txt')).toBe(false);
+  });
+});
+
+describe('splitOnSlash', () => {
+  it('should work for strings with no slash', () => {
+    expect(splitOnSlash('asdf')).toEqual(['asdf', '']);
+  });
+  it('should work on ending slash', () => {
+    expect(splitOnSlash('asdf/')).toEqual(['asdf', '/']);
+  });
+  it('should work for strings with one slash', () => {
+    expect(splitOnSlash('asdf/ghjk')).toEqual(['asdf', '/ghjk']);
+  });
+  it('should work for strings with multiple slashes', () => {
+    expect(splitOnSlash('asdf/ghjk/1234')).toEqual(['asdf', '/ghjk/1234']);
   });
 });
