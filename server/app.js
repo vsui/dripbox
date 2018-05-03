@@ -17,6 +17,7 @@ stores.then(({ credentialStore, sharedStore }) => {
     listFolder,
     downloadSharedFile,
     listSharedFolder,
+    getSharedName,
   } = downloadMiddleware(sharedStore);
   const {
     remove,
@@ -55,6 +56,7 @@ stores.then(({ credentialStore, sharedStore }) => {
     .use(unsecured.allowedMethods())
     .use(downloadSharedFile)
     .use(listSharedFolder)
+    .use(getSharedName)
     .use(verify)
     .use(remove)
     .use(addFolder)

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { get } from '../utils/api';
+import { get, getSharedFile } from '../utils/api';
 import { StyledLink } from '../styled';
 
 class FilePreview extends Component {
@@ -9,8 +9,12 @@ class FilePreview extends Component {
     fileName: PropTypes.string.isRequired,
     filePath: PropTypes.string.isRequired,
     folderPath: PropTypes.string.isRequired,
+    shared: PropTypes.bool,
   }
 
+  static defaultProps = {
+    shared: false,
+  }
   state = {
     blob: null,
   }
@@ -20,11 +24,19 @@ class FilePreview extends Component {
   }
 
   _loadFile() {
-    this._asyncRequest = get(this.props.filePath)
-      .then((blob) => {
-        this._asyncRequest = null;
-        this.setState({ blob });
-      });
+    if (this.props.shared) {
+      this._asyncRequest = getSharedFile(this.props.filePath)
+        .then((blob) => {
+          this._asyncRequest = null;
+          this.setState({ blob });
+        });
+    } else {
+      this._asyncRequest = get(this.props.filePath)
+        .then((blob) => {
+          this._asyncRequest = null;
+          this.setState({ blob });
+        });
+    }
   }
 
   render() {
@@ -58,7 +70,6 @@ class FilePreview extends Component {
         </div>
       );
     }
-
     const url = URL.createObjectURL(new Blob([this.state.blob], { type: 'text/plain' }));
     return (
       <div style={{ height: '100%' }}>

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { withRouter } from 'react-router';
 
-import { download } from '../utils/api';
+import { download, shareFile } from '../utils/api';
 import { Button } from '../styled';
 
 const Div = styled.div`
@@ -29,8 +29,10 @@ const File = props => (
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'flex-end',
-    }}>
+    }}
+    >
       <Button style={{ fontSize: '0.75em' }} onClick={() => download(props.fullPath, props.fileName)}>Download</Button>
+      <Button style={{ fontSize: '0.75em' }} onClick={() => shareFile(props.fullPath)}>Share</Button>
       <Button style={{ fontSize: '0.75em' }} onClick={props.deleteFile}>Remove</Button>
     </div>
   </Div>

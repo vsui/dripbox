@@ -1,5 +1,6 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
+const path = require('path');
 
 const { isInPath, getRelativeUrl, splitOnSlash } = require('../util/helpers');
 
@@ -95,12 +96,33 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
-        const key = `${shared.key}${rest}`;
+        const key = `${shared.key}${rest.substring(1)}`;
+        logger.info(`Parsed key... ${key}`);
         const response = await s3.getObject({
           Bucket: process.env.BUCKET_NAME,
           Key: key,
         }).promise();
-        ctx.body = { fileName: key.substring(key.lastIndexOf('/') + 1), blob: response.Body };
+        ctx.body = response.Body;
+        ctx.status = 200;
+      } catch (err) {
+        logger.error(err.message);
+        ctx.status = 500;
+      }
+    } else {
+      await next();
+    }
+  },
+
+  async getSharedName(ctx, next) {
+    if (ctx.url.startsWith('/shared/names/') && ctx.request.method === 'GET') {
+      const id = ctx.url.substring('/shared/files/'.length);
+      try {
+        const shared = await sharedStore.findOne({ id });
+        if (shared === null) {
+          ctx.status = 404;
+          return;
+        }
+        ctx.body = { key: shared.key };
         ctx.status = 200;
       } catch (err) {
         logger.error(err.message);
@@ -113,6 +135,7 @@ module.exports = sharedStore => ({
 
   async listSharedFolder(ctx, next) {
     if (ctx.url.startsWith('/shared/folders/') && ctx.request.method === 'GET') {
+      logger.info(`Listing shared folder ${ctx.url}`);
       const path = ctx.url.substring('/shared/folders/'.length);
       const [id, rest] = splitOnSlash(path);
       // only translate first
@@ -122,22 +145,28 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
+        console.log(`${shared.key}, ${rest}`);
+        const key = `${shared.key}${rest.substring(1)}`;
+        console.log(key);
+        logger.info(`id ${id} matches ${shared.key} (${rest})`);
         const response = await s3.listObjectsV2({
           Bucket: process.env.BUCKET_NAME,
-          Prefix: `${shared.key}${rest}`,
+          Prefix: key,
         }).promise();
 
         if (response.Contents.length === 0) {
-          logger.info(`Could not find folder ${shared.key}`);
+          logger.info(`Could not find folder ${key}`);
           ctx.status = 404;
           return;
         }
-        const pathWithoutUsername = `${shared.key.substring(shared.key.indexOf('/'))}${rest}/`;
+        const pathWithoutUsername = `${key.substring(key.indexOf('/'))}${key.endsWith('/') ? '' : '/'}`;
+        console.log(pathWithoutUsername);
         const files = response.Contents.map(contents => ({
           fileName: contents.Key.slice(contents.Key.indexOf('/')),
           fileSize: contents.Size,
           lastModified: contents.LastModified,
         }));
+        console.log(files);
         const filesInFolder = files.filter(file => isInPath(pathWithoutUsername, file.fileName));
         const relativePaths = filesInFolder.map(file =>
           ({ ...file, fileName: getRelativeUrl(pathWithoutUsername, file.fileName).substring(1) }));
@@ -145,6 +174,7 @@ module.exports = sharedStore => ({
         ctx.status = 200;
       } catch (err) {
         logger.error(err.message);
+        console.error(err);
         ctx.status = 500;
       }
     } else {

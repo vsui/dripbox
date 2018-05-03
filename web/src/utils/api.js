@@ -243,7 +243,71 @@ const deleteFolder = async (folderName) => {
     return Promise.resolve();
   }
   return Promise.reject();
-}
+};
+
+const listSharedFolder = async (folderName) => {
+  const res = await fetch(pathJoin(`${API_URL}/shared/folders`, folderName), {
+    method: 'GET',
+  });
+  if (res.status === 200) {
+    return res.json();
+  }
+  return Promise.reject();
+};
+
+const getSharedFile = async (fileName) => {
+  const res = await fetch(pathJoin(`${API_URL}/shared/files`, fileName), {
+    method: 'GET',
+  });
+  if (res.status === 200) {
+    return res.blob();
+  }
+  return Promise.reject();
+};
+
+const getSharedName = async (id) => {
+  const res = await fetch(`${API_URL}/shared/names/${id}`, {
+    method: 'GET',
+  });
+  if (res.status === 200) {
+    return res.json();
+  }
+  return Promise.reject();
+};
+
+const shareFile = async (path) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const res = await fetch(pathJoin(`${API_URL}/shared/files/`, path), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.status === 200) {
+    const { id } = await res.json();
+    alert(`Link is /shared/files/${id}`);
+  }
+};
+
+const shareFolder = async (path) => {
+  const token = localStorage.getItem('token');
+  if (token === null) {
+    return Promise.reject(new Error('Token unavailable'));
+  }
+  const res = await fetch(pathJoin(`${API_URL}/shared/folders/`, path), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.status === 200) {
+    const { id } = await res.json();
+    alert(`Link is /shared/folders/${id}`);
+  }
+};
 
 export {
   login,
@@ -256,4 +320,9 @@ export {
   upload,
   putFolder,
   deleteFolder,
+  listSharedFolder,
+  shareFolder,
+  getSharedName,
+  getSharedFile,
+  shareFile,
 };

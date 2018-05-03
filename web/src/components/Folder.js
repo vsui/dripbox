@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import styled from 'styled-components';
-
-import { changePath } from '../redux/actions';
+import { withRouter } from 'react-router-dom';
 import { StyledLink, Button } from '../styled';
 import { pathJoin } from '../utils/path';
+import { shareFolder } from '../utils/api';
 
 const Div = styled.div`
   display: flex;
@@ -18,6 +16,7 @@ const Div = styled.div`
 
 const Folder = (props) => {
   const { pathname } = props.location;
+  const folderPath = pathJoin(pathname.substring('/home/'.length), props.folderName);
 
   return (
     <Div>
@@ -29,6 +28,7 @@ const Folder = (props) => {
         justifyContent: 'flex-end',
       }}
       >
+        <Button onClick={() => shareFolder(folderPath)}>Share</Button>
         <Button onClick={props.removeFolder}>Remove</Button>
       </div>
     </Div>
@@ -43,19 +43,4 @@ Folder.propTypes = {
   }).isRequired,
 };
 
-const mapStateToProps = state => ({ path: state.path });
-
-const mapDispatchToProps = (dispatch, props) => ({
-  navigate: (currPath) => {
-    if (currPath === '') {
-      dispatch(changePath(props.folderName));
-    } else {
-      dispatch(changePath(`${currPath}/${props.folderName}`));
-    }
-  },
-});
-
-export default withRouter(connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Folder));
+export default withRouter(Folder);
