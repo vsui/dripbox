@@ -3,7 +3,6 @@ import {
   BrowserRouter as Router,
   Route,
   Redirect,
-  Link, 
 } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -15,6 +14,7 @@ import Landing from './routes/Landing';
 import Login from './routes/Login';
 import SharedFilePreview from './routes/SharedFilePreview';
 import SharedFileListing from './components/SharedFileListing';
+import Shared from './components/Shared';
 
 const App = () => (
   <Router>
@@ -22,6 +22,7 @@ const App = () => (
       <Header />
       <Route exact path="/" component={Landing} />
       <Route exact path="/login" component={Login} />
+      <Route exact path="/shared" component={Shared} />
       <Route path="/shared/files" component={SharedFilePreview} />
       <Route path="/shared/folders" component={SharedFileListing} />
       <ProtectedRoute

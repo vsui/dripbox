@@ -14,6 +14,7 @@ const Header = (props) => {
       <Nav>
         <StyledLink to="/">Squidbox</StyledLink>
         <StyledLink to="/home">Home</StyledLink>
+        <StyledLink to="/shared">Shared</StyledLink>
         {
           token !== null &&
             <StyledLink to="/account">Account</StyledLink>

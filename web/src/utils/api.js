@@ -288,7 +288,7 @@ const shareFile = async (path) => {
   });
   if (res.status === 200) {
     const { id } = await res.json();
-    alert(`Link is /shared/files/${id}`);
+    alert(`Code is ${id}`);
   }
 };
 
@@ -305,7 +305,7 @@ const shareFolder = async (path) => {
   });
   if (res.status === 200) {
     const { id } = await res.json();
-    alert(`Link is /shared/folders/${id}`);
+    alert(`Code is ${id}`);
   }
 };
 
