@@ -7,8 +7,6 @@ import styled from 'styled-components';
 
 import { Input, Button, StyledLink } from '../styled';
 import { login } from '../utils/api';
-import store from '../redux/store';
-import { LIST_FILES_REQUESTED } from '../redux/actions';
 
 const Div = styled.div`
   width: 300px;
