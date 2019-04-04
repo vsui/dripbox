@@ -146,7 +146,7 @@ module.exports = sharedStore => ({
           return;
         }
         console.log(`${shared.key}, ${rest}`);
-        const key = `${shared.key}${rest.substring(1)}`;
+        const key = `${shared.key}${rest}`;
         console.log(key);
         logger.info(`id ${id} matches ${shared.key} (${rest})`);
         const response = await s3.listObjectsV2({
