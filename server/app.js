@@ -8,9 +8,9 @@ const uploadMiddleware = require('./middleware/upload');
 const formidable = require('koa2-formidable');
 
 const logger = require('./util/logger');
-const stores = require('./util/credentialStore');
+const { getStores } = require('./util/store');
 
-stores.then(({ credentialStore, sharedStore }) => {
+getStores().then(({ credentialStore, sharedStore }) => {
   const { login, register, verify } = auth(credentialStore);
   const {
     download,
@@ -68,5 +68,6 @@ stores.then(({ credentialStore, sharedStore }) => {
     .use(upload)
     .use(listFolder);
 
-  app.listen(process.env.PORT, () => logger.info(`Listening on ${process.env.PORT}`));
+  const port = process.env.PORT || 3001;
+  app.listen(port, () => logger.info(`Listening on ${port}`));
 });
