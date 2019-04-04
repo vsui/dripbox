@@ -9,6 +9,7 @@ jest.mock('jsonwebtoken', () => ({
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { MemoryCredentialStore } = require('../../util/store');
 
 const auth = require('../auth');
 
@@ -29,7 +30,7 @@ const ctxWithCredentials = () => ({
 
 describe('login middleware', () => {
   it('should set status to 401 if user with username is not found', async () => {
-    const mockStore = { findOne: jest.fn().mockResolvedValue(null) };
+    const mockStore = new MemoryCredentialStore();
     const { login } = auth(mockStore);
     const ctx = ctxWithCredentials();
     await login(ctx, null);
@@ -37,7 +38,7 @@ describe('login middleware', () => {
   });
 
   it('should set status to 401 if jwt is not properly authenticated', async () => {
-    const mockStore = { findOne: jest.fn().mockResolvedValue({}) };
+    const mockStore = new MemoryCredentialStore();
     const { login } = auth(mockStore);
     bcrypt.compare = jest.fn().mockResolvedValue(false);
     const ctx = ctxWithCredentials();
@@ -46,7 +47,7 @@ describe('login middleware', () => {
   });
 
   it('should set status to 200 if jwt is properly authenticated', async () => {
-    const mockStore = { findOne: jest.fn().mockResolvedValue({}) };
+    const mockStore = new MemoryCredentialStore();
     const { login } = auth(mockStore);
     jwt.sign = jest.fn();
     mockStore.findOne = jest.fn().mockResolvedValue({ username: 'roy' });
@@ -57,7 +58,9 @@ describe('login middleware', () => {
     expect(ctx.status).toBe(200);
   });
   it('should set body to token if jwt is properly authenticated', async () => {
-    const mockStore = { findOne: jest.fn().mockResolvedValue({}) };
+    const mockStore = new MemoryCredentialStore();
+    const { username } = ctxWithCredentials().request.body;
+    mockStore.insertOne({ username, hash: '!@#' });
     const { login } = auth(mockStore);
     jwt.sign = jest.fn().mockReturnValue('mockToken');
     bcrypt.compare = jest.fn().mockResolvedValue(true);
@@ -73,21 +76,15 @@ describe('register middleware', () => {
 
   it('should successfully register if the user does not exist ', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue(null),
-      insertOne: jest.fn(),
-    };
+    const mockStore = new MemoryCredentialStore();
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
-    expect(mockStore.insertOne).toHaveBeenCalledWith({ username: 'roy', hash: 'hashXXX' });
+    expect(mockStore.findOne({ username: 'roy' })).resolves.toEqual({ username: 'roy', hash: 'hashXXX' });
   });
 
   it('should return token if the user does not exist', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue(null),
-      insertOne: jest.fn(),
-    };
+    const mockStore = new MemoryCredentialStore();
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(ctx.body).toEqual({ token: 'mockToken' });
@@ -95,10 +92,7 @@ describe('register middleware', () => {
 
   it('should set status to 200 if registration is successful', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue(null),
-      insertOne: jest.fn(),
-    };
+    const mockStore = new MemoryCredentialStore();
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(ctx.status).toBe(200);
@@ -106,21 +100,19 @@ describe('register middleware', () => {
 
   it('should set status to 401 if user exists', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue({}),
-      insertOne: jest.fn(),
-    };
+    const mockStore = new MemoryCredentialStore();
+    await mockStore.insertOne({ username: ctx.request.body.username, hash: 'hashXXX' });
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(ctx.status).toBe(401);
   });
 
   it('should not register user if user already exists', async () => {
+    const mockStore = new MemoryCredentialStore();
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue({}),
-      insertOne: jest.fn(),
-    };
+    const { username } = ctxWithCredentials().request.body;
+    await mockStore.insertOne({ username, hash: '!@#$' });
+    mockStore.insertOne = jest.fn();
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(mockStore.insertOne).not.toHaveBeenCalled();
@@ -128,10 +120,9 @@ describe('register middleware', () => {
 
   it('should not sign a token if user already exists', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue({}),
-      insertOne: jest.fn(),
-    };
+    const { username } = ctx.request.body;
+    const mockStore = new MemoryCredentialStore();
+    await mockStore.insertOne({ username, hash: 'hashXXX' });
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(jwt.sign).not.toHaveBeenCalled();
@@ -139,10 +130,9 @@ describe('register middleware', () => {
 
   it('should have an empty body if user already exists', async () => {
     const ctx = ctxWithCredentials();
-    const mockStore = {
-      findOne: jest.fn().mockResolvedValue({}),
-      insertOne: jest.fn(),
-    };
+    const { username } = ctx.request.body;
+    const mockStore = new MemoryCredentialStore();
+    await mockStore.insertOne({ username, hash: 'hashXXX' });
     const { register } = auth(mockStore);
     await register(ctx, jest.fn());
     expect(ctx.body).toBeUndefined();
