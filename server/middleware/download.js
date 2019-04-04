@@ -1,6 +1,5 @@
 const logger = require('../util/logger');
 const s3 = require('../util/s3');
-const path = require('path');
 
 const { isInPath, getRelativeUrl, splitOnSlash } = require('../util/helpers');
 
