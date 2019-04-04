@@ -5,6 +5,8 @@ const logger = require('../util/logger');
 
 const SALT_ROUNDS = 10;
 
+const jwtSecret = process.env.JWT_SECRET || 'NOTASECURESECRET!!!!';
+
 module.exports = credentialStore => ({
   async login(ctx) {
     const { username, password } = ctx.request.body;
@@ -21,7 +23,7 @@ module.exports = credentialStore => ({
     }
 
     if (await bcrypt.compare(password, user.hash)) {
-      ctx.body = { token: jwt.sign({ username }, process.env.JWT_SECRET) };
+      ctx.body = { token: jwt.sign({ username }, jwtSecret) };
       ctx.status = 200; // OK
     } else {
       ctx.status = 401; // Not authorized
@@ -34,6 +36,8 @@ module.exports = credentialStore => ({
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hash = await bcrypt.hash(password, salt);
 
+    logger.info(`Attempting to register new user '${username}'`);
+
     const user = await credentialStore.findOne({ username });
     if (user !== null) {
       logger.info(`User ${username} already exists!`);
@@ -41,7 +45,7 @@ module.exports = credentialStore => ({
       return;
     }
 
-    const token = jwt.sign({ username }, process.env.JWT_SECRET);
+    const token = jwt.sign({ username }, jwtSecret);
 
     await credentialStore.insertOne({ username, hash });
     logger.info(`${username} - ${password} - ${hash}`);
@@ -78,7 +82,7 @@ module.exports = credentialStore => ({
     logger.info('Verifying token...');
     let verified = false;
     try {
-      verified = await jwt.verify(token, process.env.JWT_SECRET);
+      verified = await jwt.verify(token, jwtSecret);
     } catch (err) {
       logger.error(err);
       ctx.body = {};
