@@ -96,7 +96,7 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
-        const key = `${shared.key}${rest.substring(1)}`;
+        const key = `${shared.key}${rest}`;
         logger.info(`Parsed key... ${key}`);
         const response = await s3.getObject({
           Bucket: process.env.BUCKET_NAME,
