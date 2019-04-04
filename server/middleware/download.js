@@ -144,9 +144,7 @@ module.exports = sharedStore => ({
           ctx.status = 404;
           return;
         }
-        console.log(`${shared.key}, ${rest}`);
         const key = `${shared.key}${rest}`;
-        console.log(key);
         logger.info(`id ${id} matches ${shared.key} (${rest})`);
         const response = await s3.listObjectsV2({
           Bucket: process.env.BUCKET_NAME,
@@ -159,13 +157,11 @@ module.exports = sharedStore => ({
           return;
         }
         const pathWithoutUsername = `${key.substring(key.indexOf('/'))}${key.endsWith('/') ? '' : '/'}`;
-        console.log(pathWithoutUsername);
         const files = response.Contents.map(contents => ({
           fileName: contents.Key.slice(contents.Key.indexOf('/')),
           fileSize: contents.Size,
           lastModified: contents.LastModified,
         }));
-        console.log(files);
         const filesInFolder = files.filter(file => isInPath(pathWithoutUsername, file.fileName));
         const relativePaths = filesInFolder.map(file =>
           ({ ...file, fileName: getRelativeUrl(pathWithoutUsername, file.fileName).substring(1) }));
@@ -173,7 +169,6 @@ module.exports = sharedStore => ({
         ctx.status = 200;
       } catch (err) {
         logger.error(err.message);
-        console.error(err);
         ctx.status = 500;
       }
     } else {
