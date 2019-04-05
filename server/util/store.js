@@ -1,3 +1,8 @@
+// Interfaces compatible with external dependencies (Mongo and S3) but using
+// memory/disk.
+const fs = require('fs');
+const path = require('path');
+
 class MemoryCredentialStore {
   constructor() {
     this.map = new Map();
@@ -36,6 +41,30 @@ class MemorySharedStore {
   }
 }
 
+class DiskS3Store {
+  constructor() {
+    this.root = '/tmp/squidbox';
+  }
+
+  getObject({ Bucket, Key }) {
+    const objectPath = path.join(this.root, Key);
+    return fs.readFile(objectPath);
+  }
+
+  listObjectsV2({ Bucket, Prefix }) {
+    const fullPath = path.join(this.root, Prefix);
+    return fs.readdir(fullPath);
+  }
+
+  deleteObject({ Bucket, Key }) {
+    throw new Error('deleteObject not implemented');
+  }
+
+  putObject({ Body, Bucket, Key }) {
+    throw new Error('putObject not implemented');
+  }
+}
+
 const getStores = () => Promise.resolve({
   credentialStore: new MemoryCredentialStore(),
   sharedStore: new MemorySharedStore(),
@@ -44,5 +73,7 @@ const getStores = () => Promise.resolve({
 module.exports = {
   MemoryCredentialStore,
   MemorySharedStore,
+  DiskS3Store,
+  s3: new DiskS3Store(),
   getStores,
 };

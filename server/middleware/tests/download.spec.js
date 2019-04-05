@@ -1,40 +1,42 @@
-jest.mock('../../util/s3', () => ({
-  getObject: jest
-    .fn()
-    .mockImplementation(({ Key }) => ({
-      promise: jest.fn().mockImplementation(() => {
-        if (Key === 'me/nonexistent-file.txt') {
-          const error = new Error('The specified key does not exist.');
-          error.code = 'NoSuchKey';
-          throw error;
-        }
-        return Promise.resolve({ Body: `Contents of ${Key}` });
-      }),
-    })),
-  listObjectsV2: jest
-    .fn()
-    .mockImplementation(({ Prefix }) => ({
-      promise: jest.fn().mockResolvedValue({
-        Contents: [
-          { Key: 'me/a.txt', LastModified: 'yesterday', Size: 200 },
-          { Key: 'me/b.txt', LastModified: 'last year', Size: 3000 },
-          { Key: 'me/c.txt', LastModified: 'never', Size: 343 },
-          { Key: 'me/foods/', LastModified: 'yesterday', Size: 200 },
-          { Key: 'me/foods/apple.txt', LastModified: 'last year', Size: 3000 },
-          { Key: 'me/foods/banana.txt', LastModified: 'never', Size: 343 },
-          { Key: 'me/foods/recipes/', LastModified: 'never', Size: 343 },
-          { Key: 'me/foods/recipes/watermelon.hs', LastModified: 'never', Size: 343 },
-          { Key: 'me/foods/recipes/gingermelon.cpp', LastModified: 'never', Size: 343 },
-          { Key: 'me/sports/', LastModified: 'yesterday', Size: 200 },
-          { Key: 'me/sports/soccer.txt', LastModified: 'last year', Size: 3000 },
-          { Key: 'me/sports/baseball.txt', LastModified: 'never', Size: 343 },
-        ].filter(({ Key }) => Key.startsWith(Prefix)),
-        status: 200,
-      }),
-    })),
+jest.mock('../../util/store', () => ({
+  s3: {
+    getObject: jest
+      .fn()
+      .mockImplementation(({ Key }) => ({
+        promise: jest.fn().mockImplementation(() => {
+          if (Key === 'me/nonexistent-file.txt') {
+            const error = new Error('The specified key does not exist.');
+            error.code = 'NoSuchKey';
+            throw error;
+          }
+          return Promise.resolve({ Body: `Contents of ${Key}` });
+        }),
+      })),
+    listObjectsV2: jest
+      .fn()
+      .mockImplementation(({ Prefix }) => ({
+        promise: jest.fn().mockResolvedValue({
+          Contents: [
+            { Key: 'me/a.txt', LastModified: 'yesterday', Size: 200 },
+            { Key: 'me/b.txt', LastModified: 'last year', Size: 3000 },
+            { Key: 'me/c.txt', LastModified: 'never', Size: 343 },
+            { Key: 'me/foods/', LastModified: 'yesterday', Size: 200 },
+            { Key: 'me/foods/apple.txt', LastModified: 'last year', Size: 3000 },
+            { Key: 'me/foods/banana.txt', LastModified: 'never', Size: 343 },
+            { Key: 'me/foods/recipes/', LastModified: 'never', Size: 343 },
+            { Key: 'me/foods/recipes/watermelon.hs', LastModified: 'never', Size: 343 },
+            { Key: 'me/foods/recipes/gingermelon.cpp', LastModified: 'never', Size: 343 },
+            { Key: 'me/sports/', LastModified: 'yesterday', Size: 200 },
+            { Key: 'me/sports/soccer.txt', LastModified: 'last year', Size: 3000 },
+            { Key: 'me/sports/baseball.txt', LastModified: 'never', Size: 343 },
+          ].filter(({ Key }) => Key.startsWith(Prefix)),
+          status: 200,
+        }),
+      })),
+  },
 }));
 
-const s3 = require('../../util/s3');
+const { s3 } = require('../../util/store');
 
 const mockSharedStore = {
   insertOne: jest.fn(),
