@@ -97,7 +97,18 @@ class DiskS3Store {
   }
 
   putObject({ Body, Bucket, Key }) {
-    throw new Error('putObject not implemented');
+    const fullPath = path.join(this.root, Key);
+    const writerStream = fs.createWriteStream(fullPath, { flag: 'w+' });
+    Body.pipe(writerStream, { end: true });
+
+    return {
+      promise() {
+        return new Promise((resolve, reject) => {
+          writerStream.on('finish', () => resolve());
+          writerStream.on('error', err => reject(err));
+        });
+      },
+    };
   }
 }
 
