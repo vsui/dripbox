@@ -90,10 +90,13 @@ class DiskS3Store {
   }
 
   deleteObject({ Bucket, Key }) {
+    const unlink = promisify(fs.unlink);
     const fullPath = path.join(this.root, Key);
-    return new Promise((resolve, reject) => {
-      fs.unlink(fullPath, err => ((err !== undefined) ? resolve() : reject()));
-    });
+    return {
+      promise() {
+        return unlink(fullPath);
+      },
+    };
   }
 
   putObject({ Body, Bucket, Key }) {
