@@ -2,6 +2,7 @@
 // memory/disk.
 const fs = require('fs');
 const path = require('path');
+const { promisify } = require('util');
 
 class MemoryCredentialStore {
   constructor() {
@@ -52,12 +53,40 @@ class DiskS3Store {
   }
 
   listObjectsV2({ Bucket, Prefix }) {
+    const readdir = promisify(fs.readdir);
+    const stat = promisify(fs.stat);
     const fullPath = path.join(this.root, Prefix);
-    return fs.readdir(fullPath);
+    return {
+      promise() {
+        // TODO need to properly set Size and LastModified
+        return readdir(fullPath)
+          .then((filenames) => {
+            const filePaths = filenames.map(filename => path.join(fullPath, filename));
+            const statPromises = filePaths.map(filePath => stat(filePath));
+            return Promise.all(statPromises).then((stats) => {
+              const files = {
+                Contents: [],
+              };
+              for (let i = 0; i < filePaths.length; i += 1) {
+                files.Contents.push({
+                  // Files with paths that end with '/' are interpreted to be folders
+                  Key: path.join(Prefix, filenames[i]) + (stats[i].isDirectory() ? '/' : ''),
+                  Size: stats[i].size,
+                  LastModified: stats[i].mtime,
+                });
+              }
+              return files;
+            });
+          });
+      },
+    };
   }
 
   deleteObject({ Bucket, Key }) {
-    throw new Error('deleteObject not implemented');
+    const fullPath = path.join(this.root, Key);
+    return new Promise((resolve, reject) => {
+      fs.unlink(fullPath, err => ((err !== undefined) ? resolve() : reject()));
+    });
   }
 
   putObject({ Body, Bucket, Key }) {

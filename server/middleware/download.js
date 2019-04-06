@@ -39,12 +39,14 @@ module.exports = sharedStore => ({
     const path = `${ctx.url.substring('/folders'.length)}${ctx.url.endsWith('/') ? '' : '/'}`;
     const { username } = ctx.params;
     logger.info(`Retrieving contents of ${path} for ${username}`);
-    const response = await s3.listObjectsV2({
-      Bucket: process.env.BUCKET_NAME,
-      Prefix: `${username}${path}`,
-    }).promise();
-    if (response.Contents.length === 0) {
-      logger.info(`Could not find folder ${path} for ${username} (${username}${path})`);
+    let response = null;
+    try {
+      response = await s3.listObjectsV2({
+        Bucket: process.env.BUCKET_NAME,
+        Prefix: `${username}${path}`,
+      }).promise();
+    } catch (err) {
+      logger.info(`Could not find folder ${path} for ${username} (${err})`);
       ctx.status = 404;
       return;
     }
