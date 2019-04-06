@@ -100,7 +100,18 @@ class DiskS3Store {
   }
 
   putObject({ Body, Bucket, Key }) {
+    // S3 had no concept of a directory so we just made objects ending with '/'
+    // to denote a directory. So when we see a Key ending in '/' we need to
+    // make a directory instead.
     const fullPath = path.join(this.root, Key);
+    if (Key.endsWith('/')) {
+      const mkdir = promisify(fs.mkdir);
+      return {
+        promise() {
+          return mkdir(fullPath);
+        },
+      };
+    }
     const writerStream = fs.createWriteStream(fullPath, { flag: 'w+' });
     Body.pipe(writerStream, { end: true });
 
