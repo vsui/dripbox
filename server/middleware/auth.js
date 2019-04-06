@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { s3 } = require('../util/store');
 
 const logger = require('../util/logger');
 
@@ -48,6 +49,7 @@ module.exports = credentialStore => ({
     const token = jwt.sign({ username }, jwtSecret);
 
     await credentialStore.insertOne({ username, hash });
+    await s3.putObject({ Key: `${username}/` }).promise();
     logger.info(`${username} - ${password} - ${hash}`);
     ctx.body = { token };
     ctx.status = 200;
