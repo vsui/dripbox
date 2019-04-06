@@ -48,8 +48,15 @@ class DiskS3Store {
   }
 
   getObject({ Bucket, Key }) {
-    const objectPath = path.join(this.root, Key);
-    return fs.readFile(objectPath);
+    const readFile = promisify(fs.readFile);
+    const fullPath = path.join(this.root, Key);
+    return {
+      promise() {
+        return readFile(fullPath)
+          .then(contents => ({ Body: contents }))
+          .catch(() => ({ code: 'NoSuchKey' }));
+      },
+    };
   }
 
   listObjectsV2({ Bucket, Prefix }) {
