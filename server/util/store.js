@@ -44,7 +44,15 @@ class MemorySharedStore {
 
 class DiskS3Store {
   constructor() {
-    this.root = '/tmp/squidbox';
+    this.root = './squidbox-data';
+  }
+
+  async initialize() {
+    const mkdir = promisify(fs.mkdir);
+    await mkdir(this.root);
+    await mkdir(path.join(this.root, 'shared'));
+    await mkdir(path.join(this.root, 'shared', 'folders'));
+    await mkdir(path.join(this.root, 'shared', 'files'));
   }
 
   getObject({ Bucket, Key }) {
@@ -131,10 +139,13 @@ const getStores = () => Promise.resolve({
   sharedStore: new MemorySharedStore(),
 });
 
+const s3 = new DiskS3Store();
+s3.initialize();
+
 module.exports = {
   MemoryCredentialStore,
   MemorySharedStore,
   DiskS3Store,
-  s3: new DiskS3Store(),
+  s3,
   getStores,
 };
