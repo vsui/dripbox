@@ -37,7 +37,7 @@ class MemorySharedStore {
   }
 
   insertOne({ key, id }) {
-    this.map.set(key, id);
+    this.map.set(id, key);
     return Promise.resolve();
   }
 }

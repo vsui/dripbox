@@ -107,6 +107,7 @@ module.exports = sharedStore => ({
           Key: key,
         }).promise();
         const id = uuid();
+        logger.info(`Sharing ${key} as ${id}`);
         await sharedStore.insertOne({ key, id });
         ctx.status = 200;
         ctx.body = { id };

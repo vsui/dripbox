@@ -90,7 +90,7 @@ module.exports = sharedStore => ({
     if (ctx.url.startsWith('/shared/files/') && ctx.request.method === 'GET') {
       const path = ctx.url.substring('/shared/files/'.length);
       const [id, rest] = splitOnSlash(path);
-      // id is only first
+      logger.info(`Getting shared file ${id}`);
       try {
         const shared = await sharedStore.findOne({ id });
         if (shared === null) {
